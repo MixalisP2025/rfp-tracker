@@ -179,6 +179,22 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   .stats-row{grid-template-columns:repeat(2,1fr);}
 }
 
+/* ── COPY LINK ICON ── */
+.copy-link-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 5px;border-radius:4px;font-size:13px;line-height:1;transition:all .15s;opacity:0.5;}
+.copy-link-btn:hover{color:var(--accent2);opacity:1;background:var(--blue-dim);}
+.copy-link-btn.copied{color:var(--green);opacity:1;}
+
+/* ── LINKS TAB ── */
+.link-paste-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:24px;}
+.link-paste-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.link-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:8px 12px;outline:none;width:100%;}
+.link-input:focus{border-color:var(--accent);}
+.link-noted-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;gap:14px;align-items:flex-start;}
+.link-noted-card:hover{border-color:var(--accent);background:var(--surface2);}
+.link-noted-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;padding-top:2px;}
+.link-noted-label{font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;}
+.link-noted-note{font-size:12px;color:var(--subtle);line-height:1.5;max-height:60px;overflow:hidden;}
+
 /* ── PRINT ── */
 @media print {
   body{background:#fff;color:#000;}
@@ -248,6 +264,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   <div class="nav-tab" onclick="showSection('phase3',this)">🖥 Phase 3 — IT <span class="tab-count" id="tc-p3">0</span></div>
   <div class="nav-tab" onclick="showSection('phase4',this)">🔐 Phase 4 — Cyber <span class="tab-count" id="tc-p4">0</span></div>
   <div class="nav-tab" onclick="showSection('phase5',this)">💰 Phase 5 — Finance <span class="tab-count" id="tc-p5">0</span></div>
+  <div class="nav-tab" onclick="showSection('links',this)">🔗 Links</div>
 </nav>
 
 <div class="main">
@@ -328,6 +345,25 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   <div class="section-sub">All amounts in EUR (€) only. Complete the financial table with pricing, Year 1–5 breakdown, Capex/Opex classification, and offer validity consent per line.</div>
   <div class="info-box red"><strong>⚠ Every line item requires "Yes" consent</strong> confirming the offer is valid through 31/12/2023. Ensure no line is left unconsented.</div>
   <div id="tasks-p5"></div>
+</div>
+
+<!-- ════════════ LINKS ════════════ -->
+<div class="section" id="links">
+  <div class="section-title">🔗 Item Links</div>
+  <div class="section-sub">Paste a copied item link below to jump directly to it, or browse all items with notes.</div>
+
+  <div class="link-paste-box">
+    <div class="link-paste-label">Paste a link to jump to an item</div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <input id="linkPasteInput" class="link-input" type="text" placeholder="https://rfp-tracker-eta.vercel.app/#p1-01" onkeydown="if(event.key==='Enter')jumpToLink()" />
+      <button class="btn-sm btn-save" onclick="jumpToLink()" style="white-space:nowrap;padding:8px 18px;">Go →</button>
+    </div>
+    <div id="linkJumpMsg" style="font-family:'DM Mono',monospace;font-size:11px;margin-top:8px;min-height:16px;"></div>
+  </div>
+
+  <div class="section-title" style="font-size:15px;margin-top:8px;margin-bottom:4px;">Items with Notes</div>
+  <div class="section-sub" style="margin-bottom:16px;">All items that have a note saved — click any row to jump to it.</div>
+  <div id="links-noted-list"></div>
 </div>
 
 </div><!-- /main -->
@@ -842,9 +878,15 @@ function buildPhase(phaseKey) {
       // Description col
       const tdDesc = document.createElement('td');
       tdDesc.className = 'task-desc';
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-link-btn';
+      copyBtn.title = 'Copy link to this item';
+      copyBtn.textContent = '🔗';
+      copyBtn.onclick = (e) => { e.stopPropagation(); copyItemLink(item.id, copyBtn); };
       tdDesc.innerHTML = `<strong>${item.label}</strong>` +
         (item.desc ? `<span class="sub">${item.desc}</span>` : '') +
         (item.hint ? `<span class="sub" style="color:var(--accent);font-style:normal;">→ ${item.hint}</span>` : '');
+      tdDesc.insertBefore(copyBtn, tdDesc.firstChild);
       tr.appendChild(tdDesc);
 
       // Response col (cyber Q only)
@@ -1059,6 +1101,7 @@ function showSection(id, tabEl) {
   document.getElementById(id).classList.add('active');
   if (tabEl) tabEl.classList.add('active');
   window.scrollTo({top: 0, behavior:'smooth'});
+  if (id === 'links') buildLinksTab();
 }
 function togglePhase(header) {
   header.closest('.phase-card').classList.toggle('open');
@@ -1073,6 +1116,104 @@ function showToast() {
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ══════════════════════════════════════════════
+//  ITEM LINKS
+// ══════════════════════════════════════════════
+function copyItemLink(itemId, btn) {
+  const url = window.location.origin + window.location.pathname + '#' + itemId;
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = '✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '🔗'; btn.classList.remove('copied'); }, 1800);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = '✓'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '🔗'; btn.classList.remove('copied'); }, 1800);
+  });
+  showToast();
+}
+
+function jumpToLink() {
+  const input = document.getElementById('linkPasteInput');
+  const msg = document.getElementById('linkJumpMsg');
+  const val = input.value.trim();
+  const hash = val.includes('#') ? val.split('#')[1] : val;
+  if (!hash) { msg.style.color='#fca5a5'; msg.textContent = 'Paste a valid item link first.'; return; }
+  jumpToItem(hash, msg);
+}
+
+function jumpToItem(itemId, msgEl) {
+  const msg = msgEl || document.getElementById('linkJumpMsg');
+  // Find which phase this item belongs to
+  let foundPhase = null;
+  for (const [key, ph] of Object.entries(PHASES)) {
+    for (const grp of ph.groups) {
+      if (grp.items.find(it => it.id === itemId)) { foundPhase = key; break; }
+    }
+    if (foundPhase) break;
+  }
+  if (!foundPhase) {
+    if (msg) { msg.style.color='#fca5a5'; msg.textContent = `Item "${itemId}" not found.`; }
+    return;
+  }
+  // Switch to that phase tab
+  const tabMap = {p1:'phase1',p2:'phase2',p3:'phase3',p4:'phase4',p5:'phase5'};
+  const sectionId = tabMap[foundPhase];
+  const tab = [...document.querySelectorAll('.nav-tab')].find(t => t.getAttribute('onclick')?.includes(`'${sectionId}'`));
+  showSection(sectionId, tab);
+  // Wait for render then scroll and highlight
+  setTimeout(() => {
+    const tr = document.querySelector(`tr[data-item-id="${itemId}"]`);
+    if (tr) {
+      tr.scrollIntoView({behavior:'smooth', block:'center'});
+      tr.style.transition = 'background .2s';
+      tr.style.background = 'rgba(59,130,246,0.18)';
+      setTimeout(() => { tr.style.background = ''; }, 2000);
+      if (msg) { msg.style.color='#86efac'; msg.textContent = `✓ Jumped to item: ${itemId}`; }
+    }
+  }, 120);
+}
+
+function buildLinksTab() {
+  const container = document.getElementById('links-noted-list');
+  if (!container) return;
+  container.innerHTML = '';
+  // Collect all items that have notes
+  const noted = [];
+  for (const [key, ph] of Object.entries(PHASES)) {
+    for (const grp of ph.groups) {
+      for (const item of grp.items) {
+        const st = getItem(item.id);
+        if (st.comment && st.comment.replace(/<[^>]*>/g,'').trim()) {
+          noted.push({item, phase: ph.label, group: grp.title, comment: st.comment});
+        }
+      }
+    }
+  }
+  if (noted.length === 0) {
+    container.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:20px 0;">No notes added yet. Add notes to items and they'll appear here.</div>`;
+    return;
+  }
+  noted.forEach(({item, phase, group, comment}) => {
+    const card = document.createElement('div');
+    card.className = 'link-noted-card';
+    const plainText = comment.replace(/<[^>]*>/g,'').trim();
+    card.innerHTML = `
+      <div class="link-noted-id">${item.id}<br><span style="color:var(--accent2)">${phase}</span></div>
+      <div style="flex:1">
+        <div class="link-noted-label">${item.label}</div>
+        <div class="link-noted-note">${plainText}</div>
+      </div>
+      <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);white-space:nowrap;">${group}</div>`;
+    card.onclick = () => jumpToItem(item.id);
+    container.appendChild(card);
+  });
 }
 
 // ══════════════════════════════════════════════
@@ -1115,6 +1256,12 @@ function printSection() {
 // ══════════════════════════════════════════════
 ['p1','p2','p3','p4','p5'].forEach(buildPhase);
 updateProgress();
+
+// Handle direct link via URL hash (e.g. #p1-01)
+if (window.location.hash) {
+  const itemId = window.location.hash.replace('#','');
+  setTimeout(() => jumpToItem(itemId), 400);
+}
 
 // Load Firebase SDK then sync
 (function loadFirebaseSDK() {
