@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha Bank RFP — Response Tracker v2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+:root {
+  --bg:#0d0f14; --surface:#13161e; --surface2:#1a1e29; --surface3:#21263a;
+  --border:#252a38; --border2:#2e3547;
+  --accent:#3b82f6; --accent2:#60a5fa;
+  --green:#22c55e; --green-dim:rgba(34,197,94,0.12); --green-border:rgba(34,197,94,0.25);
+  --amber:#f59e0b; --amber-dim:rgba(245,158,11,0.12); --amber-border:rgba(245,158,11,0.25);
+  --red:#ef4444; --red-dim:rgba(239,68,68,0.12); --red-border:rgba(239,68,68,0.3);
+  --purple:#a78bfa; --purple-dim:rgba(167,139,250,0.12); --purple-border:rgba(167,139,250,0.25);
+  --blue-dim:rgba(59,130,246,0.12); --blue-border:rgba(59,130,246,0.25);
+  --text:#e2e8f0; --muted:#64748b; --subtle:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.6;min-height:100vh;}
+
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,#0d0f14 0%,#111827 60%,#0d1117 100%);border-bottom:1px solid var(--border);padding:32px 40px 24px;position:relative;overflow:hidden;}
+.header::before{content:'';position:absolute;top:-60px;right:-60px;width:350px;height:350px;background:radial-gradient(circle,rgba(59,130,246,0.07) 0%,transparent 70%);pointer-events:none;}
+.header-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;margin-bottom:8px;}
+.header h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:6px;}
+.header h1 span{color:var(--accent2);}
+.header p{color:var(--subtle);font-size:13px;max-width:560px;}
+.meta-row{display:flex;gap:28px;margin-top:20px;flex-wrap:wrap;align-items:center;}
+.meta-item .mlabel{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;}
+.meta-item .mval{font-size:13px;color:var(--text);font-weight:500;}
+.deadline-chip{display:inline-flex;align-items:center;gap:5px;background:var(--red-dim);border:1px solid var(--red-border);color:#fca5a5;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:500;}
+
+/* ── PROGRESS BAR ── */
+.progress-bar-wrap{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 40px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.prog-group{display:flex;align-items:center;gap:10px;flex:1;min-width:180px;}
+.prog-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.prog-track{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s ease;}
+.prog-fill.green{background:var(--green);}
+.prog-fill.amber{background:var(--amber);}
+.prog-fill.red{background:var(--red);}
+.prog-fill.blue{background:var(--accent);}
+.prog-pct{font-family:'DM Mono',monospace;font-size:11px;color:var(--subtle);min-width:32px;text-align:right;}
+.overall-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--subtle);}
+
+/* ── NAV ── */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;display:flex;gap:0;overflow-x:auto;}
+.nav-tab{padding:12px 18px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;user-select:none;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+.tab-count{display:inline-flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:10px;font-size:10px;padding:1px 6px;margin-left:5px;color:var(--muted);}
+.tab-count.done{background:var(--green-dim);color:#86efac;}
+
+/* ── MAIN ── */
+.main{padding:24px 40px;max-width:1280px;}
+.section{display:none;}
+.section.active{display:block;}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;}
+.stat-card .num{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;line-height:1;margin-bottom:3px;}
+.stat-card .lbl{font-size:11px;color:var(--muted);}
+.num-red{color:#fca5a5;} .num-amber{color:#fcd34d;} .num-green{color:#86efac;} .num-blue{color:#93c5fd;} .num-purple{color:#c4b5fd;}
+
+/* ── INFO BOX ── */
+.info-box{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:13px 18px;margin-bottom:14px;font-size:13px;color:var(--subtle);line-height:1.6;}
+.info-box.amber{border-left-color:var(--amber);}
+.info-box.green{border-left-color:var(--green);}
+.info-box.red{border-left-color:var(--red);}
+.info-box strong{color:var(--text);}
+
+/* ── SECTION HEADING ── */
+.section-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:4px;}
+.section-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+
+/* ── PHASE CARD ── */
+.phase-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.phase-header{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none;transition:background .2s;}
+.phase-header:hover{background:var(--surface2);}
+.phase-num{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.08em;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:3px 9px;white-space:nowrap;}
+.phase-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;flex:1;}
+.phase-progress{font-family:'DM Mono',monospace;font-size:11px;color:var(--subtle);white-space:nowrap;}
+.phase-toggle{color:var(--muted);font-size:16px;transition:transform .2s;line-height:1;}
+.phase-card.open .phase-toggle{transform:rotate(180deg);}
+.phase-body{display:none;border-top:1px solid var(--border);}
+.phase-card.open .phase-body{display:block;}
+
+/* ── TASK TABLE ── */
+.task-table{width:100%;border-collapse:collapse;}
+.task-table th{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 16px;text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);}
+.task-table td{padding:10px 16px;font-size:12.5px;border-bottom:1px solid rgba(37,42,56,.5);vertical-align:top;line-height:1.5;}
+.task-table tr:last-child td{border-bottom:none;}
+.task-table tr:hover td{background:rgba(255,255,255,.01);}
+.task-id{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
+.task-desc{color:var(--text);}
+.task-desc strong{color:#fff;font-weight:500;}
+.task-desc .sub{color:var(--subtle);font-size:11.5px;margin-top:2px;display:block;font-style:italic;}
+
+/* ── STATUS SELECT ── */
+.status-sel{font-family:'DM Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;outline:none;width:100%;min-width:130px;}
+.status-sel:focus{border-color:var(--accent);}
+.status-sel.s-done{background:var(--green-dim);border-color:var(--green-border);color:#86efac;}
+.status-sel.s-inprogress{background:var(--blue-dim);border-color:var(--blue-border);color:#93c5fd;}
+.status-sel.s-investigate{background:var(--amber-dim);border-color:var(--amber-border);color:#fcd34d;}
+.status-sel.s-blocked{background:var(--red-dim);border-color:var(--red-border);color:#fca5a5;}
+.status-sel.s-na{background:var(--purple-dim);border-color:var(--purple-border);color:#c4b5fd;}
+
+/* ── COMMENT BOX ── */
+.comment-wrap{position:relative;}
+.comment-btn{background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted);font-size:11px;padding:3px 8px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap;}
+.comment-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.comment-btn.has-comment{border-color:var(--amber-border);color:#fcd34d;background:var(--amber-dim);}
+.comment-popup{position:fixed;z-index:999;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;}
+.comment-popup.visible{display:block;}
+.comment-popup textarea{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12.5px;line-height:1.5;padding:8px 10px;resize:vertical;min-height:80px;outline:none;}
+.comment-popup textarea:focus{border-color:var(--accent);}
+.comment-popup-footer{display:flex;gap:8px;margin-top:8px;justify-content:flex-end;}
+.btn-sm{font-size:11px;padding:4px 12px;border-radius:5px;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-weight:500;}
+.btn-save{background:var(--accent);color:#fff;}
+.btn-save:hover{background:#2563eb;}
+.btn-cancel{background:var(--surface);color:var(--muted);border:1px solid var(--border2);}
+.btn-cancel:hover{color:var(--text);}
+.comment-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+
+/* ── RESPONSE SELECT (for cyber Q) ── */
+.response-sel{font-family:'DM Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;outline:none;width:100%;min-width:150px;}
+.response-sel:focus{border-color:var(--accent);}
+.response-sel.r-full{background:var(--green-dim);border-color:var(--green-border);color:#86efac;}
+.response-sel.r-partial{background:var(--amber-dim);border-color:var(--amber-border);color:#fcd34d;}
+.response-sel.r-could{background:var(--blue-dim);border-color:var(--blue-border);color:#93c5fd;}
+.response-sel.r-not{background:var(--red-dim);border-color:var(--red-border);color:#fca5a5;}
+.response-sel.r-na{background:var(--purple-dim);border-color:var(--purple-border);color:#c4b5fd;}
+
+/* ── CATEGORY CHIP ── */
+.cat-chip{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface2);padding:2px 7px;border-radius:4px;white-space:nowrap;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:#1e2433;border:1px solid var(--green-border);color:#86efac;font-family:'DM Mono',monospace;font-size:12px;padding:10px 18px;border-radius:8px;z-index:1000;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+.filter-btn{font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:16px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s;}
+.filter-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.filter-btn.active{background:var(--blue-dim);border-color:var(--blue-border);color:#93c5fd;}
+.filter-label{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .header,.nav,.main,.progress-bar-wrap{padding-left:16px;padding-right:16px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">RFP Response Tracker · Advanced Information Services AE · v2</div>
+  <h1>Alpha Bank — <span>Securities Services Management Platform</span></h1>
+  <p>Interactive tracker with progress monitoring, status tracking, and comments. All data is saved in your browser automatically.</p>
+  <div class="meta-row">
+    <div class="meta-item"><div class="mlabel">Reference</div><div class="mval">CS00460 / NDA 1187</div></div>
+    <div class="meta-item"><div class="mlabel">Buyer</div><div class="mval">Georgios Mouroutsos · georgios.mouroutsos@alpha.gr</div></div>
+    <div class="meta-item"><div class="mlabel">Deadline</div><div class="mval"><span class="deadline-chip">⚠ 24 March 2026 — 4:00 PM</span></div></div>
+    <div class="meta-item"><div class="mlabel">Currency</div><div class="mval">EUR (€) only</div></div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap" id="progressBars">
+  <div class="prog-group"><span class="prog-label">Phase 1 Admin</span><div class="prog-track"><div class="prog-fill green" id="prog-p1" style="width:0%"></div></div><span class="prog-pct" id="pct-p1">0%</span></div>
+  <div class="prog-group"><span class="prog-label">Phase 2 Business</span><div class="prog-track"><div class="prog-fill amber" id="prog-p2" style="width:0%"></div></div><span class="prog-pct" id="pct-p2">0%</span></div>
+  <div class="prog-group"><span class="prog-label">Phase 3 IT</span><div class="prog-track"><div class="prog-fill blue" id="prog-p3" style="width:0%"></div></div><span class="prog-pct" id="pct-p3">0%</span></div>
+  <div class="prog-group"><span class="prog-label">Phase 4 Security</span><div class="prog-track"><div class="prog-fill red" id="prog-p4" style="width:0%"></div></div><span class="prog-pct" id="pct-p4">0%</span></div>
+  <div class="prog-group"><span class="prog-label">Phase 5 Finance</span><div class="prog-track"><div class="prog-fill green" id="prog-p5" style="width:0%"></div></div><span class="prog-pct" id="pct-p5">0%</span></div>
+  <span class="overall-count" id="overallCount">0 / 0 complete</span>
+</div>
+
+<nav class="nav">
+  <div class="nav-tab active" onclick="showSection('overview',this)">📋 Overview</div>
+  <div class="nav-tab" onclick="showSection('phase1',this)">🔏 Phase 1 — Admin <span class="tab-count" id="tc-p1">0</span></div>
+  <div class="nav-tab" onclick="showSection('phase2',this)">💼 Phase 2 — Business <span class="tab-count" id="tc-p2">0</span></div>
+  <div class="nav-tab" onclick="showSection('phase3',this)">🖥 Phase 3 — IT <span class="tab-count" id="tc-p3">0</span></div>
+  <div class="nav-tab" onclick="showSection('phase4',this)">🔐 Phase 4 — Cyber <span class="tab-count" id="tc-p4">0</span></div>
+  <div class="nav-tab" onclick="showSection('phase5',this)">💰 Phase 5 — Finance <span class="tab-count" id="tc-p5">0</span></div>
+</nav>
+
+<div class="main">
+
+<!-- ════════════ OVERVIEW ════════════ -->
+<div class="section active" id="overview">
+  <div class="section-title">RFP at a Glance</div>
+  <div class="section-sub">Your overall status across all 5 phases. Click any tab to jump in.</div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="num num-red" id="ov-outstanding">—</div><div class="lbl">Outstanding items</div></div>
+    <div class="stat-card"><div class="num num-blue" id="ov-inprog">—</div><div class="lbl">In progress</div></div>
+    <div class="stat-card"><div class="num num-amber" id="ov-investigate">—</div><div class="lbl">Need investigation</div></div>
+    <div class="stat-card"><div class="num num-green" id="ov-done">—</div><div class="lbl">Completed</div></div>
+    <div class="stat-card"><div class="num num-purple" id="ov-total">—</div><div class="lbl">Total tracked items</div></div>
+  </div>
+  <div class="info-box red"><strong>⚠ Deadline: 24 March 2026, 4:00 PM.</strong> Work through all phases before this date. Phase 1 (NDA + Reputational Risk) must be done first as it involves signed legal documents.</div>
+  <div class="info-box amber"><strong>🔐 New: Cybersecurity section added.</strong> The CyberSecurity file contains 59 mandatory security requirements, 42 SR questions (On-Prem questionnaire), 42 SR questions (Cloud questionnaire), 73 Cloud Service questions (CS1–CS73), and 123 Cloud Provider questions (CP1–CP123). This is the largest single section. Assign your CISO / security architect immediately.</div>
+  <div class="info-box green"><strong>💡 How to use this tracker:</strong> Set a status on each item using the dropdown. Click "💬 Note" to add a comment or internal note to any item. Your progress and all comments are saved automatically in this browser. Use the filter buttons inside each phase to focus on outstanding or blocked items.</div>
+
+  <div class="phase-card open">
+    <div class="phase-header" onclick="togglePhase(this)">
+      <span class="phase-num">LEGEND</span>
+      <span class="phase-title">Status Key</span>
+      <span class="phase-toggle">▾</span>
+    </div>
+    <div class="phase-body">
+      <table class="task-table">
+        <tr><td style="width:180px"><select class="status-sel s-done"><option>✅ Done</option></select></td><td class="task-desc">Item is fully completed and ready for submission.</td></tr>
+        <tr><td><select class="status-sel s-inprogress"><option>🔄 In Progress</option></select></td><td class="task-desc">Work has started but is not yet complete.</td></tr>
+        <tr><td><select class="status-sel s-investigate"><option>🔍 Investigate</option></select></td><td class="task-desc">Needs internal investigation before you can answer.</td></tr>
+        <tr><td><select class="status-sel s-blocked"><option>🚫 Blocked</option></select></td><td class="task-desc">Cannot proceed — add a comment explaining the blocker.</td></tr>
+        <tr><td><select class="status-sel s-na"><option>N/A</option></select></td><td class="task-desc">Not applicable to your solution/deployment model.</td></tr>
+        <tr><td><select class="status-sel"><option>— Not started</option></select></td><td class="task-desc">Default state. Needs attention.</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ PHASE 1 ════════════ -->
+<div class="section" id="phase1">
+  <div class="section-title">Phase 1 — Administrative & Legal</div>
+  <div class="section-sub">Do this first. These are gate items — the RFP cannot proceed without them.</div>
+  <div class="info-box">The draft response (19.03.26) shows NDA and Reputational Risk Questionnaire as attached. <strong>Confirm these are final signed versions</strong>, not placeholders.</div>
+  <div id="tasks-p1"></div>
+</div>
+
+<!-- ════════════ PHASE 2 ════════════ -->
+<div class="section" id="phase2">
+  <div class="section-title">Phase 2 — Business & Functional Requirements</div>
+  <div class="section-sub">Business Questionnaire (19 items) + detailed functional areas. Product team should lead. Response options: Fully Supported / Parametrisation Required / Development Required / Within SaaS Roadmap / Not Supported.</div>
+  <div id="tasks-p2"></div>
+</div>
+
+<!-- ════════════ PHASE 3 ════════════ -->
+<div class="section" id="phase3">
+  <div class="section-title">Phase 3 — IT Architecture & Technical Requirements</div>
+  <div class="section-sub">Sections A (On-Prem), B (SaaS), and C (General). Assign a lead IT architect. Several items are mandatory — see notes.</div>
+  <div id="tasks-p3"></div>
+</div>
+
+<!-- ════════════ PHASE 4 — CYBER ════════════ -->
+<div class="section" id="phase4">
+  <div class="section-title">Phase 4 — Cybersecurity Requirements</div>
+  <div class="section-sub">Source: CyberSecurity_Requirements_and_Questionnaire.xlsx. Four sub-sections: Security Requirements (59), SR Questionnaire OnPrem (42), SR Questionnaire Cloud (42), Cloud Service (73), Cloud Provider (123). Assign CISO / security architect. Response options: Full Support / Partial Support / Could be implemented / Not Supported / N/A.</div>
+  <div class="info-box amber"><strong>🔍 Response options for the questionnaire sheets</strong> are: <strong>Full Support · Partial Support · Could be implemented · Not Supported · N/A</strong> — pick the one that matches your platform's capability per question.</div>
+  <div id="tasks-p4"></div>
+</div>
+
+<!-- ════════════ PHASE 5 ════════════ -->
+<div class="section" id="phase5">
+  <div class="section-title">Phase 5 — Financial Offer</div>
+  <div class="section-sub">All amounts in EUR (€) only. Complete the financial table with pricing, Year 1–5 breakdown, Capex/Opex classification, and offer validity consent per line.</div>
+  <div class="info-box red"><strong>⚠ Every line item requires "Yes" consent</strong> confirming the offer is valid through 31/12/2023. Ensure no line is left unconsented.</div>
+  <div id="tasks-p5"></div>
+</div>
+
+</div><!-- /main -->
+
+<!-- Comment popup -->
+<div class="comment-popup" id="commentPopup">
+  <div class="comment-label">💬 Internal Note / Comment</div>
+  <textarea id="commentText" placeholder="Add your note, question, or internal comment here…"></textarea>
+  <div class="comment-popup-footer">
+    <button class="btn-sm btn-cancel" onclick="closeComment()">Cancel</button>
+    <button class="btn-sm btn-save" onclick="saveComment()">Save Note</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">Saved ✓</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA — All tasks
+// ══════════════════════════════════════════════
+const PHASES = {
+  p1: {
+    label:'Phase 1', color:'green',
+    groups:[{
+      id:'g-admin', title:'Administrative & Legal', num:'1.1',
+      items:[
+        {id:'p1-01', label:'Check existing NDA', desc:'Verify whether a currently valid generic NDA exists between AIS and Alpha Bank. If yes, submit that instead of signing the new template.', hint:'Check legal/contracts team'},
+        {id:'p1-02', label:'Sign & upload NDA', desc:'Alpha Bank_NDA_RFP Securities Services Management Platform.docx — obtain authorised signatory sign-off and upload to portal Question 1.', hint:'Management / legal'},
+        {id:'p1-03', label:'Complete Reputational Risk Questionnaire', desc:'Locate the Reputational Risk Questionnaire sent by Alpha Bank, have compliance/legal fill it in, and upload against portal Question 2.', hint:'Compliance team'},
+        {id:'p1-04', label:'Confirm submission contact', desc:'Contact person: Stathis Alafris (Partner). Send to: georgios.mouroutsos@alpha.gr. Confirm this is still the correct point of contact.', hint:'Confirmed in draft response'},
+        {id:'p1-05', label:'Change response status from DRAFT to FINAL', desc:'Portal currently shows response status as "Draft". Ensure it is submitted/finalised before 24.03.26 16:00.', hint:'Portal action required'},
+      ]
+    }]
+  },
+  p2: {
+    label:'Phase 2', color:'amber',
+    groups:[
+      {id:'g-bq', title:'Business Questionnaire — Q001 to Q019', num:'2.1', items:[
+        {id:'p2-q001', label:'Q001 — Multi-client support', desc:'Does the system support Institutional, Individual, Legal Entity, and ad hoc portfolio grouping?'},
+        {id:'p2-q002', label:'Q002 — Multi-asset support', desc:'Equities, MFs, Bonds, Structured Products, Derivatives, OTC (IRS/FWD), Energy Contracts, Certificates, AIFs etc.'},
+        {id:'p2-q003', label:'Q003 — Product Database & Maintenance', desc:'Bloomberg/Refinitiv interface for instrument creation, static data sync, price & FX rate updates.'},
+        {id:'p2-q004', label:'Q004 — Segregated & Omnibus accounts', desc:'Does the system support both segregated and omnibus investment accounts?'},
+        {id:'p2-q005', label:'Q005 — Trade Order Management', desc:'Order creation, bulk orders, pre-trade compliance, routing via FIX/API/SWIFT/Email.'},
+        {id:'p2-q006', label:'Q006 — Portfolio & Position Management', desc:'Real-time positions (total/settled/unsettled/pending/pledged), corporate actions, collateral, cash ledger.'},
+        {id:'p2-q007', label:'Q007 — Compliance & Risk Management', desc:'MiFID II, FATCA, SFTR, CSDR, SRD II, EMIR, UCITS/AIFMD. Audit trail, regulatory reporting, pre/post-trade rules.'},
+        {id:'p2-q008', label:'Q008 — Clearing & Settlement', desc:'Automated clearing, General Clearing Member activities, failed trade management, partial settlement, CSDR penalties.'},
+        {id:'p2-q009', label:'Q009 — Post-Trade & Accounting', desc:'Automated GL accounting, accrual accounting, tax calculation, auto-generated accounting entries.'},
+        {id:'p2-q010', label:'Q010 — Transfer Agent', desc:'Investor records, NAV calculation, fund lifecycle events, joint accounts, bulk processing, bank holidays.'},
+        {id:'p2-q011', label:'Q011 — Fund Administration', desc:'NAV calculation, accounting, fund registry, client communication, regulatory reporting.'},
+        {id:'p2-q012', label:'Q012 — Fund Custody', desc:'NAV control, redemptions/subscriptions, fund financial statements, UCITS investment limits.'},
+        {id:'p2-q013', label:'Q013 — Reporting & Analytics', desc:'Client statements, TWR & IRR, attribution, cost & charges, depreciation, ad hoc, regulatory, APA & ARM.'},
+        {id:'p2-q014', label:'Q014 — Deployment Model', desc:'On-Premises (primary preference) and/or Cloud-based? Bank prefers On-Prem as primary.'},
+        {id:'p2-q015', label:'Q015 — Integration', desc:'FIX, SWIFT ISO15022 & ISO20022, SAT API (ATHEX), CBS middleware, file-based, SFTP, REST APIs.'},
+        {id:'p2-q016', label:'Q016 — User Experience & Workflow', desc:'Intuitive UI, workflow automation, multi-approval levels (maker/checker), parametric user menus.'},
+        {id:'p2-q017', label:'Q017 — Security & Compliance', desc:'RBAC, segregation of duties, encryption at rest + in transit, full auditability, SSO/EntraID.'},
+        {id:'p2-q018', label:'Q018 — Language Support', desc:'System must support at minimum Greek and English for all reports and UI.'},
+        {id:'p2-q019', label:'Q019 — References / Experience', desc:'Similar installations at other financial institutions? Names, scale, geography.'},
+      ]},
+      {id:'g-func', title:'Key Functional Areas — Investigation Required', num:'2.2', items:[
+        {id:'p2-f01', label:'ATHEX & Greek Market Connectivity', desc:'ATHEX CSD (Σ.Α.Τ), ATHEX Clear, Euronext connectivity in proprietary protocol/API. This is a critical Greek market requirement.', hint:'Integration team — high priority'},
+        {id:'p2-f02', label:'Core Banking System (CBS) Integration', desc:'Confirm API or file-based sync: client static data, bank accounts, transactions, deposits/withdrawals, cash blocks/unblocks, debit postings, Central Product Factory.', hint:'Integration team'},
+        {id:'p2-f03', label:'AIF Module — Cyprus Law Alignment', desc:'Cash flow monitoring, leverage/loan monitoring, investment restriction monitoring, NAV oversight, Cyprus legislation & AIFMD alignment. Confirm if module exists.', hint:'Product team — high priority'},
+        {id:'p2-f04', label:'Collateral Management', desc:'Auto pledge/unpledge based on portfolio valuation. Configurable LTV%, warning%, margin calls, concentration %, haircut %. Fully supported or needs config?', hint:'Product team'},
+        {id:'p2-f05', label:'Tax Management', desc:'Greek tax: capital gains, dividend/interest tax calc & withholding, tax certificates per product/client. Confirm regulatory coverage.', hint:'Compliance team'},
+        {id:'p2-f06', label:'Data Provider Integration', desc:'Bloomberg and/or Refinitiv for instrument creation, static data sync, price & FX updates. Confirm supported providers.', hint:'Product/IT team'},
+        {id:'p2-f07', label:'Document Management System (DMS)', desc:'Client reports (confirmation slips, statements etc.) need to be sent to bank\'s own DMS. Confirm connectivity options.', hint:'Integration team'},
+      ]}
+    ]
+  },
+  p3: {
+    label:'Phase 3', color:'blue',
+    groups:[
+      {id:'g-itA', title:'Section A — On-Premises Architecture (45 questions)', num:'3A', items:[
+        {id:'p3-a01', label:'A1 — Architecture diagram', desc:'Full diagram: modules, tiers, integration with bank systems and 3rd parties. Must be produced.', hint:'Lead architect'},
+        {id:'p3-a02', label:'A2–A5 — Scalability & cloud-native', desc:'Does architecture scale? Autoscaling? Container/serverless? Required compute/storage resources?', hint:'IT architect'},
+        {id:'p3-a03', label:'A6–A7 — 3rd-party components & OS', desc:'Any bundled 3rd-party products? Licensing, support, upgrade plans. Commercial OS/platform requirements?', hint:'IT + procurement'},
+        {id:'p3-a04', label:'A8–A9 — Key management & env sync', desc:'How are encryption keys managed? How are non-prod environments kept in sync with production?', hint:'Security/IT ops'},
+        {id:'p3-a05', label:'A10–A14 — Availability, redundancy & DR', desc:'HA (active-active or active-failover)? Performance testing methodology? DR process, backup strategy, replication?', hint:'Infrastructure team'},
+        {id:'p3-a06', label:'A15–A18 — Logging & Monitoring', desc:'Audit trail capability, SIEM integration, configurable log retention, log types (Error, Access, Perf, Security, Audit, Debug).', hint:'IT ops / security'},
+        {id:'p3-a07', label:'A19–A23 — Support model', desc:'Support channels, contract tiers (basic/silver/gold), support centre locations, certified Greek partner, single point of contact.', hint:'Customer success / sales'},
+        {id:'p3-a08', label:'A24–A27 — Integration methods & encryption', desc:'SDK, REST/SOAP, Event Streams, SFTP. AuthN/AuthZ for external systems. HTTPS/TLS encrypted channels. At-rest encryption.', hint:'Integration/security team'},
+        {id:'p3-a09', label:'A28–A34 — UI & Access Control', desc:'Desktop/tablet/mobile support. Web-based UI. Responsive. Citrix compatible (XenApp/XenDesktop, WS2016). SSO with AD/EntraID (SAML, Kerberos, ADFS, OpenID, OAuth). Online user & role management. AD group-based access.', hint:'IT / dev team'},
+        {id:'p3-a10', label:'A35–A40 — Releases & Roadmap', desc:'Current release version. Release schedule. Next release date & features. 3-year enhancement history. Upgrade/patch procedure.', hint:'Product management'},
+        {id:'p3-a11', label:'A41–A43 — CI/CD & Change Management', desc:'Version control (Git)? CI/CD pipeline? Environment-specific configuration management?', hint:'DevOps team'},
+        {id:'p3-a12', label:'A44–A45 — Technical Training', desc:'Training delivered to bank staff (users, admins). Specialist skills required (TSQL, PLSQL, .Net, Java, C#)?', hint:'Professional services'},
+      ]},
+      {id:'g-itB', title:'Section B — SaaS Architecture (58 questions)', num:'3B', items:[
+        {id:'p3-b01', label:'B1–B4 — Cloud model & providers', desc:'IaaS/PaaS/SaaS? Which cloud providers? Which regions?', hint:'IT to confirm'},
+        {id:'p3-b02', label:'B5 — EU Hosting (MANDATORY)', desc:'Solution MUST be hosted in EU region. This is marked mandatory. Must confirm explicitly.', hint:'Critical — mandatory'},
+        {id:'p3-b03', label:'B6 & B9 — Scalability & tenant isolation (MANDATORY)', desc:'Architecture scales (mandatory). Dedicated hosting model OR isolated tenant data in shared model — mandatory.', hint:'IT architect'},
+        {id:'p3-b04', label:'B21–B24 — SLA / RTO / RPO', desc:'What SLA % is offered? RTO? RPO? Scheduled maintenance windows? Need specific figures.', hint:'Infrastructure team'},
+        {id:'p3-b05', label:'B34 — Backup encryption (MANDATORY)', desc:'Backups must be encrypted. This is mandatory. Must confirm explicitly.', hint:'Critical — mandatory'},
+        {id:'p3-b06', label:'B35 — Data extraction (MANDATORY)', desc:'Bank must be able to extract and store solution data to its own repositories. Mandatory.', hint:'Critical — mandatory'},
+        {id:'p3-b07', label:'B29, B41 — Monitoring portal & incident management', desc:'UI/mobile for monitoring & telemetry? Azure EntraID option? Incident management process and tooling?', hint:'IT ops'},
+      ]},
+      {id:'g-itC', title:'Section C — General IT (applies to both models)', num:'3C', items:[
+        {id:'p3-c01', label:'C1–C8 — IAM & Security (ALL MANDATORY)', desc:'RBAC, data visibility by user/group, multi-level approvals (maker/checker), parametric user menus, privileged account management, password complexity, renewal policies, self-service reset.', hint:'Security/IT — all mandatory'},
+        {id:'p3-c02', label:'C12, C14, C16–C19 — Reporting (MANDATORY items)', desc:'Standard reports (positions, cash, settlement, reconciliation), data export (CSV/XML/JSON/API), scheduled reporting, data warehouse integration, DMS connectivity, EOD position reconciliation.', hint:'Product + integration — mandatory'},
+        {id:'p3-c03', label:'C20 — Admin Functionality (MANDATORY)', desc:'App Admin role (system health UI, menu config, system config via UI). Functional Admin role (user creation, password reset, audit trail via UI).', hint:'Product team — mandatory'},
+        {id:'p3-c04', label:'C21–C22 — Alerting (MANDATORY)', desc:'Parametric alert rules per functional category. Parametric alert recipient user groups per category.', hint:'Product team — mandatory'},
+        {id:'p3-c05', label:'C23–C26 — Instrument Prices & FX (MANDATORY)', desc:'Bloomberg/Refinitiv instrument creation and price/FX update. Price groups per instrument/portfolio. Price update report (succeeded/failed).', hint:'Data vendor integrations — mandatory'},
+        {id:'p3-c06', label:'C27–C35 — CBS Integration (MANDATORY)', desc:'Central Product Factory (API/file), bank account opening, balance sync, client record fetch/sync, blocks/unblocks, debit postings, cash availability, transaction posting.', hint:'Integration team — critical mandatory'},
+        {id:'p3-c07', label:'C37–C41 — Implementation & Migration', desc:'Typical implementation phases/duration for a bank this size. Data migration from existing IMS/custody system. Test strategy, UAT test data. Parallel run / shadow mode capability.', hint:'Delivery / PS team'},
+        {id:'p3-c08', label:'C44–C46 — Support & Monitoring', desc:'Severity classification (SEV1–4) with response/resolution SLAs. Operational metric sharing. Monitoring hooks/APIs for enterprise monitoring stack (Prometheus, Splunk, Elastic, AppDynamics). C46 mandatory.', hint:'Support + IT ops'},
+        {id:'p3-c09', label:'C47–C49 — Product Roadmap', desc:'3–5 year roadmap (new markets, regulatory, cloud/API modernisation). Client change request process. LTS/release support windows.', hint:'Product management'},
+      ]}
+    ]
+  },
+  p4: {
+    label:'Phase 4', color:'red',
+    groups:[
+      {id:'g-creq', title:'Security Requirements — 59 Mandatory Requirements (Cyber Requirements Sheet)', num:'4.1', items:[
+        {id:'p4-r01', label:'Req 1 — RBAC model', desc:'RBAC must be supported. Access to data/functions granted only to users with appropriate role-based rights.'},
+        {id:'p4-r02', label:'Req 2–3 — Authentication on all comms', desc:'Authentication enforced for all network communications: internal between components, external to 3rd parties, user/admin interfaces.'},
+        {id:'p4-r03', label:'Req 4 — Encryption in transit (TLS 1.2+)', desc:'All communications (HTTPS, sLDAP), DB connections, file exchanges (SFTP) must use TLS 1.2 or higher. Confidentiality, integrity, authentication.'},
+        {id:'p4-r04', label:'Req 5–6 — MFA & 2FA', desc:'MFA must be supported out of the box (in case Bank IdP integration is not feasible). 2FA must work with EntraID integration.'},
+        {id:'p4-r05', label:'Req 7–8, 10 — Password security', desc:'Passwords not displayed in plain text. Browser "save password" feature must be preventable. Confirm how this is enforced.'},
+        {id:'p4-r06', label:'Req 9 — Azure Active Directory / EntraID integration', desc:'Solution must support integration with Identity Security, Authentication, and Authorization via AD and Microsoft Azure AD EntraID.'},
+        {id:'p4-r07', label:'Req 11 — SSO', desc:'Single Sign-On must be supported.'},
+        {id:'p4-r08', label:'Req 12–15 — Authorization & Least Privilege', desc:'All requests (external + internal) must be authorized. Least Privilege principle applied in all cases. No conflicting roles.'},
+        {id:'p4-r09', label:'Req 16–17 — No elevated privileges & parameterised DB access', desc:'Solution must not require local admin or elevated privileges for end users. Database access via parameterised stored procedures only.'},
+        {id:'p4-r10', label:'Req 18–20 — IDM, AD integration, RBAC', desc:'Integration with bank\'s Identity Management (IDM). AD security groups for role assignment. RBAC to control data and function access.'},
+        {id:'p4-r11', label:'Req 21 — PII & sensitive data protection', desc:'PII must only be accessible through an application layer enforcing authentication, authorization, logging and auditing.'},
+        {id:'p4-r12', label:'Req 22 — Secure temporary file management', desc:'Randomised/obfuscated names, access controls, secure cleanup, restricted indexing, no sensitive data in temp files.'},
+        {id:'p4-r13', label:'Req 23–24 — Encryption at rest & in transit', desc:'Encryption of all data (sensitive and non-sensitive) at rest and in transit. HTTPS, SSL, TLS, sFTP, VPN.'},
+        {id:'p4-r14', label:'Req 25–28 — Cipher suites & algorithm strength', desc:'AES-256, SHA3-512, RSA n>2048, DSA p=3072, TLS 1.2/1.3. Unsupported protocols (TLS 1.0/1.1, SSLv2/3, telnet) must be disabled. Weak algorithms (SHA-1, MD5, RC4, DH) must be disabled/removable. Data at rest encrypted by default.'},
+        {id:'p4-r15', label:'Req 29, 50 — Data masking & tokenization', desc:'Personal data displayed in masked form based on user clearance level. Data masking or tokenization for sensitive data.'},
+        {id:'p4-r16', label:'Req 30–31 — ISO 27001 & security fix procedures', desc:'Vendor must be ISO 27001 certified. Solution must follow OWASP, NIST best practices. Timely security fix procedures must exist.'},
+        {id:'p4-r17', label:'Req 32 — Idle session timeout', desc:'Idle session timeout must be implemented and configurable per bank requirements.'},
+        {id:'p4-r18', label:'Req 33–34 — Web proxy & attack surface reduction', desc:'Web proxy support for external internet access. Ability to disable unnecessary components/network services.'},
+        {id:'p4-r19', label:'Req 35–36 — Architecture diagram & 3-tier design', desc:'Comprehensive cybersecurity architecture diagram. 3-layer architecture separating components logically — no monolithic design.'},
+        {id:'p4-r20', label:'Req 37–40 — Privileged access, tech stack hiding, single session, n-tier', desc:'No elevated privileges required. Tech stack must be hidden under all conditions. One active session per user. n-Tier architecture (min 3 tiers).'},
+        {id:'p4-r21', label:'Req 41 — Multi-tenancy isolation', desc:'If used by multiple Group companies: secure isolation of tenant data and resources. Logical partitioning, access controls, encryption.'},
+        {id:'p4-r22', label:'Req 42–44 — Data integrity & input validation', desc:'Data integrity in transmission (cryptographic verification). All inputs verified and validated. File upload validation (type, size, virus/malicious code).'},
+        {id:'p4-r23', label:'Req 45–48 — Logging, auditing & SIEM', desc:'Secure, tamper-proof historical records. Detailed audit logs of all actions. Log file protection (encryption, FIM). SIEM integration — specifically MS Sentinel.'},
+        {id:'p4-r24', label:'Req 49 — Non-repudiation', desc:'Critical transactions must have verifiable proof of action, data integrity/origin guarantees, and sender identity authentication.'},
+        {id:'p4-r25', label:'Req 51–52 — API security', desc:'APIs secured with OAuth tokens, API keys, rate-limiting, mTLS. OAuth2, mTLS/X.509 client certs, RESTful endpoints required.'},
+        {id:'p4-r26', label:'Req 53–54 — GDPR & regulatory compliance', desc:'Solution must comply with GDPR, PCI DSS, DORA, NIST, CIS, PSD2, SWIFT CSP. Security controls must be implemented.'},
+        {id:'p4-r27', label:'Req 55 — SWIFT CSP integration', desc:'Secure integration with SWIFT messaging system. Compliance with SWIFT Customer Security Programme (CSP) controls.'},
+        {id:'p4-r28', label:'Req 56 — Penetration testing & vulnerability scans', desc:'Pen tests and vulnerability scans must be executed for the solution. Provide results/evidence.'},
+        {id:'p4-r29', label:'Req 57–58 — Cloud security baselines', desc:'If cloud: follow Microsoft cloud security benchmark, Well-Architected Framework, AWS/GCP security best practices. Cloud Provider questionnaire must be answered.'},
+        {id:'p4-r30', label:'Req 59 — Address existing solution weaknesses', desc:'New solution should address any findings and weaknesses identified in the current IMS solution.'},
+      ]},
+      {id:'g-sr-onprem', title:'SR Questionnaire — On-Premises (SR1–SR42, Cyber Questionnaire OnPrem sheet)', num:'4.2', items:[
+        {id:'p4-sr-op01', label:'SR1 — RBAC enforcement', desc:'Does the solution ensure access to data/functions granted only to users with proper rights?', hint:'Select response: Full/Partial/Could be/Not Supported/N/A'},
+        {id:'p4-sr-op02', label:'SR2–SR3 — Authentication on all comms & central IdP', desc:'Authentication on all network comms. Credentials checked against central account repository or IdP.'},
+        {id:'p4-sr-op03', label:'SR4 — Out-of-box MFA', desc:'MFA feature available out of the box if Bank IdP integration is not feasible?'},
+        {id:'p4-sr-op04', label:'SR5 — Browser password save prevention', desc:'Can solution prevent "save password" / "remember my password" in web browsers? Centrally configurable for desktop clients?'},
+        {id:'p4-sr-op05', label:'SR6 — Azure EntraID integration', desc:'Can solution integrate with Azure EntraID (or similar) for authenticating internal and external users?'},
+        {id:'p4-sr-op06', label:'SR7 — SSO', desc:'Is Single Sign-On supported for authenticating inbound user access?'},
+        {id:'p4-sr-op07', label:'SR8 — All requests authorized', desc:'All requests (external UI and internal system-to-system) are properly authorized?'},
+        {id:'p4-sr-op08', label:'SR9 — Least Privilege & no conflicting roles', desc:'Grants minimum necessary permissions per role. Prevents multiple/conflicting role assignments.'},
+        {id:'p4-sr-op09', label:'SR10 — Parameterised stored procedures', desc:'Access to database data through parameterised stored procedures only?'},
+        {id:'p4-sr-op10', label:'SR11 — Web-based API for IDM role config', desc:'Does solution offer a web-based API for configuring user roles via an Identity Management System?'},
+        {id:'p4-sr-op11', label:'SR12 — AD group-based role assignment', desc:'Can solution assign roles and access rights based on Active Directory security groups?'},
+        {id:'p4-sr-op12', label:'SR13 — RBAC support', desc:'Does the solution support Role-Based Access Control?'},
+        {id:'p4-sr-op13', label:'SR14 — PII protection via app layer', desc:'PII inaccessible to unauthorized users. App layer enforces auth, authz, logging, auditing.'},
+        {id:'p4-sr-op14', label:'SR15 — Secure temp file management', desc:'Randomised names, access controls, secure cleanup, restricted indexing, no sensitive data in temp files.'},
+        {id:'p4-sr-op15', label:'SR16 — Encryption at rest', desc:'Sensitive data encrypted at rest with proper key management?'},
+        {id:'p4-sr-op16', label:'SR17 — Encryption in transit', desc:'Sensitive data encrypted in transit (HTTPS, SSL, TLS, sFTP, VPN)?'},
+        {id:'p4-sr-op17', label:'SR18 — Data masking per clearance level', desc:'Personal data can be displayed in masked form based on user clearance level?'},
+        {id:'p4-sr-op18', label:'SR19 — ISO 27001 & OWASP/NIST', desc:'Vendor ISO 27001 certified? Solution follows OWASP, NIST best practices?'},
+        {id:'p4-sr-op19', label:'SR20 — Security fix procedures', desc:'Vendor has procedures for timely provision of security fixes?'},
+        {id:'p4-sr-op20', label:'SR21 — Idle session timeout (configurable)', desc:'Idle session timeout built into application design and configurable?'},
+        {id:'p4-sr-op21', label:'SR22 — Web proxy support', desc:'Solution supports web proxy service for accessing external internet resources?'},
+        {id:'p4-sr-op22', label:'SR23 — Disable unnecessary components', desc:'Solution allows disabling unnecessary components/network services to reduce attack surface?'},
+        {id:'p4-sr-op23', label:'SR24 — Cybersecurity architecture diagram', desc:'Has vendor provided a comprehensive architecture diagram showing all connections, components, protocols?'},
+        {id:'p4-sr-op24', label:'SR25 — 3-layer architecture (no monolith)', desc:'Solution implements 3-layer architecture separating components logically?'},
+        {id:'p4-sr-op25', label:'SR26 — MDM/MAM for mobile app', desc:'If native mobile app: can MDM/MAM policies be enforced? App wrapping or MAM APIs?'},
+        {id:'p4-sr-op26', label:'SR27 — No elevated privileges required', desc:'Solution does NOT require superuser/root/admin execution? Detail any permissions needed.'},
+        {id:'p4-sr-op27', label:'SR28 — Technology stack hidden', desc:'System hides tech stack under normal, anomalous/error conditions? What mechanisms?'},
+        {id:'p4-sr-op28', label:'SR29 — Single active session per user', desc:'Only one active session per user at any time? Mechanisms for monitoring/management?'},
+        {id:'p4-sr-op29', label:'SR30 — n-Tier architecture (min 3 tiers)', desc:'Presentation, application, and data storage tiers separated in functionality and security?'},
+        {id:'p4-sr-op30', label:'SR31 — Multi-tenancy isolation', desc:'If multi-company use: how is tenant data/resources securely isolated on shared infrastructure?'},
+        {id:'p4-sr-op31', label:'SR32 — Data integrity in transmission', desc:'Critical data remains unaltered during transmission. Integrity checks and cryptographic verification.'},
+        {id:'p4-sr-op32', label:'SR33 — Input validation', desc:'All inputs verified and validated to prevent security vulnerabilities?'},
+        {id:'p4-sr-op33', label:'SR34 — File upload validation', desc:'Uploaded files validated for type, size, and scanned for viruses/malicious code?'},
+        {id:'p4-sr-op34', label:'SR35 — Tamper-proof log retention', desc:'Historical records (logs) maintained securely and protected against tampering?'},
+        {id:'p4-sr-op35', label:'SR36 — Non-repudiation for critical transactions', desc:'Verifiable proof of action, data integrity/origin, sender identity for critical/important transactions?'},
+        {id:'p4-sr-op36', label:'SR37 — Data masking or tokenization', desc:'Does solution employ data masking or tokenization for sensitive data?'},
+        {id:'p4-sr-op37', label:'SR38 — API security (OAuth, rate-limiting, best practices)', desc:'APIs secured with OAuth tokens, API keys, rate-limiting etc.? API security best practices followed?'},
+        {id:'p4-sr-op38', label:'SR39 — GDPR compliance', desc:'Does the solution comply with GDPR?'},
+        {id:'p4-sr-op39', label:'SR40 — PCI DSS, DORA, CIS, NIST, SWIFT CSCF/CSP compliance', desc:'Does the solution comply with PCI DSS, DORA, CIS, NIST, SWIFT CSCF/CSP?'},
+        {id:'p4-sr-op40', label:'SR41 — Cloud Provider & Cloud Service controls', desc:'Does the solution follow cloud security controls? Answer questions in separate Cloud tabs.'},
+        {id:'p4-sr-op41', label:'SR42 — Cloud security baselines', desc:'Microsoft cloud security benchmark, Well-Architected Framework, AWS/GCP best practices?'},
+      ]},
+      {id:'g-sr-cloud', title:'SR Questionnaire — Cloud Deployment (SR1–SR42, Cyber Questionnaire Cloud sheet)', num:'4.3', items:[
+        {id:'p4-sr-cl01', label:'SR1–SR42 (Cloud) — Same questions as On-Prem but for cloud deployment', desc:'All 42 SR questions must be answered again in context of the cloud deployment model. See Phase 4.2 for the full question list. Ensure a cloud-specific response is given for each.', hint:'Cloud/SaaS responses may differ from on-prem answers — complete separately'},
+      ]},
+      {id:'g-cs', title:'Cloud Service Questionnaire — CS1 to CS73 (Cloud Service sheet)', num:'4.4', items:[
+        {id:'p4-cs-01', label:'CS1 — Data outside EEA zone?', desc:'Is data collected, processed or managed outside EEA zone?'},
+        {id:'p4-cs-02', label:'CS2–CS3 — External access & architecture', desc:'Is system accessible from external networks/internet? Has high-level architecture been defined and documented?'},
+        {id:'p4-cs-03', label:'CS4–CS9 — Encryption protocols', desc:'HTTPS for all client-server connections. Encryption between solution components, with internal systems, with 3rd-party systems. TLS 1.2 minimum. Valid certificates from legitimate CA. Site-to-site VPN with IPSec?'},
+        {id:'p4-cs-04', label:'CS10–CS14 — Network security', desc:'Dedicated private WAN connection (Azure ExpressRoute)? Firewalls with separate network interfaces or virtual instances per zone? WAF deployed? DDoS protection configured?'},
+        {id:'p4-cs-05', label:'CS15–CS20 — IAM & SSO for cloud', desc:'IAM via on-premises AD connected to cloud (SAML v2.0, OAuth, OpenID)? Trust relationship between on-prem and CSP identity stores? IDaaS? Cloud-first or hybrid identity? SSO (Kerberos/SAML 2.0)?'},
+        {id:'p4-cs-06', label:'CS21–CS22 — MFA & geolocation authentication', desc:'MFA deployed for cloud service access? Geolocation-based factor (IP restriction, location-based block)?'},
+        {id:'p4-cs-07', label:'CS23–CS29 — Cloud access control & admin', desc:'Role creation for least privilege. User access control by role. Four-eye principle for critical functions. Least privilege for cloud admins. Up-to-date admin inventory with regular checks. Privileged Access Management (PAM) tool. Key admin actions logged and reviewed.'},
+        {id:'p4-cs-08', label:'CS30–CS36 — Data storage, backup & encryption', desc:'Data storage location choices. Regular backups (including config settings). Alpha Bank data labelled by classification. Encryption at rest and in transit. Customer-managed encryption keys. Unique key per tenant. Customer key management with API access.'},
+        {id:'p4-cs-09', label:'CS37–CS39 — DLP & multi-tenancy', desc:'CASB DLP coverage for on-prem systems without on-prem DLP tool? DLP aligned with on-prem policy. Alpha Bank data separated from other customers (multi-tenancy)?'},
+        {id:'p4-cs-10', label:'CS40–CS45 — Vulnerability & pen testing', desc:'Periodic vulnerability scans. Periodic penetration tests. Critical/high findings mitigated within 15 days. Customer-approved pen tests possible. Code reviews performed. Privileged access to security management systems restricted, logged, monitored.'},
+        {id:'p4-cs-11', label:'CS47–CS51 — SIEM, SOAR & incident response', desc:'SIEM configured for cloud logs and alerts. Cloud security incident management capability (people + tooling). SOAR for automated incident response. Regular IR simulations. Any security incidents in past 2 years?'},
+        {id:'p4-cs-12', label:'CS52–CS56 — Mobile app security', desc:'MDM/MAM policy enforcement. Certificate pinning. Blocked on jailbroken/rooted devices. Minimal app permissions. Code obfuscation.'},
+        {id:'p4-cs-13', label:'CS57–CS61 — Change management & session controls', desc:'Formal change management for production. Concurrent session limits. Auto-logout on inactivity. Notification when admin user added/removed. Segregated admin interface.'},
+        {id:'p4-cs-14', label:'CS62–CS66 — Logging, file upload & data masking', desc:'App security logs protected from unauthorized access/modification. File type validation on upload. Input validation. Antivirus scanning of uploads. Data masking per user clearance.'},
+        {id:'p4-cs-15', label:'CS67–CS73 — HA, DR & data disposal', desc:'High Availability (Active-Active or Active-Cold Standby). Disaster Recovery capability. Tenant-triggered failover. Secure return of customer data on contract end. Industry-standard format for unstructured data. Secure disposal procedures and contractual mechanisms.'},
+      ]},
+      {id:'g-cp', title:'Cloud Provider Questionnaire — CP1 to CP123 (Cloud_ Provider sheet)', num:'4.5', items:[
+        {id:'p4-cp-01', label:'CP1–CP6 — Security risk assessment & governance', desc:'Formalized periodic security risk assessment process. Third-party/subcontractor risk monitoring. Risk treatment plans. Management-approved security policies. Exception handling process. Designated CISO.'},
+        {id:'p4-cp-02', label:'CP7–CP12 — Asset & data management', desc:'Automated asset inventory tool. Removable media policy. Formal data classification procedure. Data labelling (including customer data). Secure disposal policy. Electronic data wiping before asset reuse.'},
+        {id:'p4-cp-03', label:'CP13–CP20 — Data in transit, DLP & phishing prevention', desc:'Corporate data encrypted in transit outside and inside corporate network. Email phishing prevention. Malicious website detection/prevention. DLP procedure and technical solution. Controls for cloud file sharing. External sharing approval policy.'},
+        {id:'p4-cp-04', label:'CP21–CP30 — Encryption policy & key management', desc:'Management-approved encryption policy. Full-disk encryption on all systems. Database encryption. Key generation per industry standards. Keys encrypted at rest and in transit. Centralised KMS. Customer data encrypted at rest. Customer-managed keys option. AES 128-bit minimum (256-bit ideal). Data segmentation between tenants.'},
+        {id:'p4-cp-05', label:'CP31–CP34 — Security training & change management', desc:'Employee security awareness training. InfoSec approval required for changes. Changes (network/systems/app/code) subject to change control. Customer notification before impactful changes.'},
+        {id:'p4-cp-06', label:'CP35–CP40 — Capacity, redundancy & backup', desc:'Time synchronization. Monitoring for performance and capacity. Redundancy in multi-tenancy peak usage. Backups stored with equivalent security controls. Backup guidelines defined.'},
+        {id:'p4-cp-07', label:'CP40–CP50 — Access control policy & privileged accounts', desc:'Management-approved access control policy (incl. teleworking). Unique IDs for authentication. Service account inventory. Local accounts assigned to unique privileged users. Access approval process. Least privilege for apps/OS/DB/network. Password policy (length/complexity/expiry/lockout). User access review process. Terminated employee access removed within 24hrs.'},
+        {id:'p4-cp-08', label:'CP51–CP58 — Secure development', desc:'Formal security training for developers. Granular application logging. Session timeout (e.g. 20 min). Separated dev/test/staging from production. Developer access to production (including read-only)? Source code access controlled. Authorization for production data in test. Secure code reviews (OWASP Top 10).'},
+        {id:'p4-cp-09', label:'CP59–CP65 — Infrastructure & application security', desc:'Logical/physical segregation of web, app, and DB components. Security configuration standards. TLS 1.2/1.3 for all HTTP traffic. WAF deployed. Controlled application/system changes. Security requirements from start of development (DevSecOps). Acceptance tests including security compliance checks.'},
+        {id:'p4-cp-10', label:'CP66–CP74 — Incident management & monitoring', desc:'Established security incident management procedure. 24x7x365 Incident Response team. Customer-specific notification in IR Plan (incl. personal data breaches). Physical asset loss/theft procedures. SIEM for log correlation. Malware activity alerts. Incident registry. Privacy incident reporting process. Security incidents in past 2 years?'},
+        {id:'p4-cp-11', label:'CP75–CP81 — Security certifications', desc:'SOC 2 audit within last 12 months (provide report). ISO 27001 assessment and current certification (provide scope). Cyber/data breach insurance. Secure non-cleartext network protocols. PCI DSS current certification. Subcontractors also PCI DSS certified?'},
+        {id:'p4-cp-12', label:'CP82–CP92 — Endpoint & network security', desc:'End user device security configuration standards. Remote access/file sharing require auth + encryption. Screen lock on inactivity. Monthly high-risk patches on endpoints. Mobile device security enforcement (PIN, encryption, remote wipe). Anti-malware and zero-day detection on all endpoints. Network device security standards (firewalls, switches, routers, WAPs). Network device log protection. Priority patching for high-risk systems. Network/security tech (firewalls, IDS/IPS, WAF) enforcing security.'},
+        {id:'p4-cp-13', label:'CP93–CP102 — Remote access, multi-tenancy & DDoS', desc:'Remote access policy. MFA for remote network connections. MFA for admin system access. Encrypted remote access. Security tech events sent to central SIEM. Controls preventing cross-customer compromise in pooled environments. DDoS resilience mechanisms.'},
+        {id:'p4-cp-14', label:'CP103–CP112 — Anti-malware, vulnerability & patch management', desc:'Anti-malware policy (no disabling without security approval). Application allowlisting/blocklisting. All vulnerability scan/pen test findings tracked to remediation. Periodic scans/tests (and after significant changes). Detailed system/app logs for incident investigation. Log retention min 1 year. Logs protected and stored on alternate systems (SIEM). Regular patching with documented exceptions. Priority patching for high-risk. No unsupported OS/DB/app components (or document if so).'},
+        {id:'p4-cp-15', label:'CP113–CP123 — Containers, cloud hosting & third-party audits', desc:'Containers (Docker/K8s/OpenShift) used for corporate data? Customer ability to prohibit containers. Cloud Hosting Provider recent SOC2 report. Cloud Hosting Provider ISO27001 certified. Network segmentation + Firewall/IPS/IDS/WAF/DAM in cloud. Cloud provider IAM and least privilege. Roles/responsibilities agreed (shared responsibility model). Data management techniques (backup, classification, deletion, CASB DLP). Secure cloud config (gold images, secure APIs, containerisation). Ongoing security (vuln management, SIEM, incident management). Regular third-party security audits.'},
+      ]}
+    ]
+  },
+  p5: {
+    label:'Phase 5', color:'green',
+    groups:[{
+      id:'g-fin', title:'Financial Offer Completion', num:'5.1',
+      items:[
+        {id:'p5-01', label:'SW — Subscriptions', desc:'Define subscription pricing: annual/multi-year? Per user or per module? Provide list price, discount %, unit price, Year 1–5 allocation.'},
+        {id:'p5-02', label:'IT Prof. Services — Configuration', desc:'Estimate effort (days × day rate). Specify Capex/Opex, invoicing schedule, payment terms.'},
+        {id:'p5-03', label:'IT Prof. Services — Installation', desc:'Estimate effort + any per diem expenses. On-site in Athens? Include travel & living if applicable.'},
+        {id:'p5-04', label:'IT Prof. Services — Implementation', desc:'Full project implementation cost. Break down by phase if possible. Year 1–5 allocation.'},
+        {id:'p5-05', label:'IT Prof. Services — Consulting Services', desc:'Any additional consulting within scope? Specify if this is included in Implementation or separate.'},
+        {id:'p5-06', label:'IT Prof. Services — Project Office / PM', desc:'PM cost — separate line or included in implementation? Estimate effort in days.'},
+        {id:'p5-07', label:'SW — Maintenance & Support', desc:'Annual M&S: % of license value or flat fee? Applies from Year 1 or post go-live? Multi-year terms?'},
+        {id:'p5-08', label:'IT Prof. Services — Data Migration', desc:'Migration from existing IMS/custody system. Estimate effort based on migration approach described in Phase 3.'},
+        {id:'p5-09', label:'IT Prof. Services — Training', desc:'Training for bank staff (users and admins). Days of training, location, materials included?'},
+        {id:'p5-10', label:'Expenses — Per Diem / Travel', desc:'Travel & living for on-site delivery in Athens. Estimate based on project plan.'},
+        {id:'p5-11', label:'HW (if On-Prem) — Servers & Storage', desc:'Server hardware, storage. Include only if HW supply is in scope for AIS. Confirm with bank if they procure separately.'},
+        {id:'p5-12', label:'IT Prof. Services — Integration / Custom Development', desc:'CBS API, ATHEX, Bloomberg etc. Scope from Phase 3 technical answers first before pricing.'},
+      ]
+    },{
+      id:'g-fin-checks', title:'Financial Offer Final Checklist', num:'5.2',
+      items:[
+        {id:'p5-c01', label:'All costs in EUR (€) only', desc:'No other currency accepted. Every amount in the table must be in €.'},
+        {id:'p5-c02', label:'Year 1–5 cost allocation complete on every line', desc:'Total Offered Cost must be broken down across 5 years per line item.'},
+        {id:'p5-c03', label:'Every line marked Mandatory or Optional', desc:'Select from the mandatory/optional dropdown for each line.'},
+        {id:'p5-c04', label:'Every line classified as Capex or Opex', desc:'Select financial structure (Capex/Opex) for each line item.'},
+        {id:'p5-c05', label:'Invoicing schedule described per line', desc:'Detail how and when each line item will be invoiced.'},
+        {id:'p5-c06', label:'Payment terms completed per line', desc:'Payment terms & conditions for each line.'},
+        {id:'p5-c07', label:'T&Cs documents attached where referenced', desc:'Upload/attach relevant T&C documents.'},
+        {id:'p5-c08', label:'Assumptions/constraints noted per line', desc:'Record any assumptions, special conditions, or limitations per line item.'},
+        {id:'p5-c09', label:'"Financial offer valid through 31/12/2023" — Yes consent per line', desc:'Every line must have "Yes" selected in the consent column confirming offer validity.'},
+        {id:'p5-c10', label:'List price, discount %, and unit price consistent', desc:'Verify arithmetic: list price − discount = unit price across all lines.'},
+        {id:'p5-c11', label:'Total Offered Cost column correct', desc:'Verify total = unit price × quantity for each line.'},
+      ]
+    }]
+  }
+};
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('rfp_state_v2') || '{}'); } catch(e) { return {}; }
+}
+function saveState(state) {
+  localStorage.setItem('rfp_state_v2', JSON.stringify(state));
+}
+let STATE = loadState();
+
+function getItem(id) { return STATE[id] || {status:'', comment:''}; }
+function setItem(id, key, val) {
+  if (!STATE[id]) STATE[id] = {status:'', comment:''};
+  STATE[id][key] = val;
+  saveState(STATE);
+}
+
+// ══════════════════════════════════════════════
+//  BUILD UI
+// ══════════════════════════════════════════════
+const STATUS_OPTS = [
+  {val:'', label:'— Not started'},
+  {val:'done', label:'✅ Done'},
+  {val:'inprogress', label:'🔄 In Progress'},
+  {val:'investigate', label:'🔍 Investigate'},
+  {val:'blocked', label:'🚫 Blocked'},
+  {val:'na', label:'N/A'},
+];
+const RESPONSE_OPTS = [
+  {val:'', label:'— Select response'},
+  {val:'full', label:'Full Support'},
+  {val:'partial', label:'Partial Support'},
+  {val:'could', label:'Could be implemented'},
+  {val:'not', label:'Not Supported'},
+  {val:'na', label:'N/A'},
+];
+
+function buildPhase(phaseKey) {
+  const ph = PHASES[phaseKey];
+  const container = document.getElementById('tasks-' + phaseKey);
+  if (!container) return;
+
+  // Filter bar
+  const filterBar = document.createElement('div');
+  filterBar.className = 'filter-bar';
+  filterBar.innerHTML = `<span class="filter-label">Filter:</span>
+    <button class="filter-btn active" onclick="filterPhase('${phaseKey}','all',this)">All</button>
+    <button class="filter-btn" onclick="filterPhase('${phaseKey}','',this)">Not started</button>
+    <button class="filter-btn" onclick="filterPhase('${phaseKey}','investigate',this)">🔍 Investigate</button>
+    <button class="filter-btn" onclick="filterPhase('${phaseKey}','blocked',this)">🚫 Blocked</button>
+    <button class="filter-btn" onclick="filterPhase('${phaseKey}','inprogress',this)">🔄 In Progress</button>
+    <button class="filter-btn" onclick="filterPhase('${phaseKey}','done',this)">✅ Done</button>`;
+  container.appendChild(filterBar);
+
+  ph.groups.forEach(grp => {
+    const card = document.createElement('div');
+    card.className = 'phase-card open';
+    card.id = 'grp-' + grp.id;
+
+    const doneCount = grp.items.filter(it => getItem(it.id).status === 'done' || getItem(it.id).status === 'na').length;
+    const header = document.createElement('div');
+    header.className = 'phase-header';
+    header.innerHTML = `<span class="phase-num">${grp.num}</span>
+      <span class="phase-title">${grp.title}</span>
+      <span class="phase-progress" id="gp-${grp.id}">${doneCount}/${grp.items.length} done</span>
+      <span class="phase-toggle">▾</span>`;
+    header.onclick = () => togglePhase(header);
+    card.appendChild(header);
+
+    const body = document.createElement('div');
+    body.className = 'phase-body';
+
+    // Determine if this is a cyber questionnaire group (needs response select)
+    const isCyberQ = grp.id === 'g-sr-onprem' || grp.id === 'g-sr-cloud' || grp.id === 'g-cs' || grp.id === 'g-cp';
+
+    const table = document.createElement('table');
+    table.className = 'task-table';
+    table.innerHTML = `<thead><tr>
+      <th style="width:32px">✓</th>
+      <th>Item</th>
+      ${isCyberQ ? '<th style="width:170px">Response</th>' : ''}
+      <th style="width:160px">Status</th>
+      <th style="width:90px">Note</th>
+    </tr></thead>`;
+
+    const tbody = document.createElement('tbody');
+    grp.items.forEach(item => {
+      const st = getItem(item.id);
+      const tr = document.createElement('tr');
+      tr.dataset.itemId = item.id;
+      tr.dataset.status = st.status || '';
+
+      // Checkbox col
+      const tdCheck = document.createElement('td');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = st.status === 'done';
+      cb.onchange = (e) => {
+        setItem(item.id, 'status', e.target.checked ? 'done' : '');
+        tr.dataset.status = e.target.checked ? 'done' : '';
+        const sel = tr.querySelector('.status-sel');
+        if (sel) { sel.value = e.target.checked ? 'done' : ''; applyStatusStyle(sel); }
+        updateProgress();
+      };
+      tdCheck.appendChild(cb);
+      tr.appendChild(tdCheck);
+
+      // Description col
+      const tdDesc = document.createElement('td');
+      tdDesc.className = 'task-desc';
+      tdDesc.innerHTML = `<strong>${item.label}</strong>` +
+        (item.desc ? `<span class="sub">${item.desc}</span>` : '') +
+        (item.hint ? `<span class="sub" style="color:var(--accent);font-style:normal;">→ ${item.hint}</span>` : '');
+      tr.appendChild(tdDesc);
+
+      // Response col (cyber Q only)
+      if (isCyberQ) {
+        const tdResp = document.createElement('td');
+        const respSel = document.createElement('select');
+        respSel.className = 'response-sel';
+        RESPONSE_OPTS.forEach(o => {
+          const opt = document.createElement('option');
+          opt.value = o.val; opt.textContent = o.label;
+          respSel.appendChild(opt);
+        });
+        respSel.value = st.response || '';
+        applyResponseStyle(respSel);
+        respSel.onchange = () => {
+          setItem(item.id, 'response', respSel.value);
+          applyResponseStyle(respSel);
+          showToast();
+        };
+        tdResp.appendChild(respSel);
+        tr.appendChild(tdResp);
+      }
+
+      // Status col
+      const tdStatus = document.createElement('td');
+      const statusSel = document.createElement('select');
+      statusSel.className = 'status-sel';
+      STATUS_OPTS.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o.val; opt.textContent = o.label;
+        statusSel.appendChild(opt);
+      });
+      statusSel.value = st.status || '';
+      applyStatusStyle(statusSel);
+      statusSel.onchange = () => {
+        setItem(item.id, 'status', statusSel.value);
+        tr.dataset.status = statusSel.value;
+        cb.checked = statusSel.value === 'done';
+        applyStatusStyle(statusSel);
+        updateProgress();
+        showToast();
+      };
+      tdStatus.appendChild(statusSel);
+      tr.appendChild(tdStatus);
+
+      // Comment col
+      const tdComment = document.createElement('td');
+      const btn = document.createElement('button');
+      btn.className = 'comment-btn' + (st.comment ? ' has-comment' : '');
+      btn.textContent = st.comment ? '💬 Note ●' : '💬 Note';
+      btn.id = 'cb-' + item.id;
+      btn.onclick = (e) => openComment(item.id, e);
+      tdComment.appendChild(btn);
+      tr.appendChild(tdComment);
+
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    body.appendChild(table);
+    card.appendChild(body);
+    container.appendChild(card);
+  });
+}
+
+function applyStatusStyle(sel) {
+  sel.className = 'status-sel';
+  const map = {done:'s-done', inprogress:'s-inprogress', investigate:'s-investigate', blocked:'s-blocked', na:'s-na'};
+  if (map[sel.value]) sel.classList.add(map[sel.value]);
+}
+function applyResponseStyle(sel) {
+  sel.className = 'response-sel';
+  const map = {full:'r-full', partial:'r-partial', could:'r-could', not:'r-not', na:'r-na'};
+  if (map[sel.value]) sel.classList.add(map[sel.value]);
+}
+
+// ══════════════════════════════════════════════
+//  FILTER
+// ══════════════════════════════════════════════
+function filterPhase(phaseKey, filterVal, btn) {
+  document.querySelectorAll(`#tasks-${phaseKey} .filter-btn`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll(`#tasks-${phaseKey} tbody tr`).forEach(tr => {
+    if (filterVal === 'all') { tr.style.display = ''; return; }
+    tr.style.display = tr.dataset.status === filterVal ? '' : 'none';
+  });
+}
+
+// ══════════════════════════════════════════════
+//  PROGRESS
+// ══════════════════════════════════════════════
+function updateProgress() {
+  let ovDone=0, ovInprog=0, ovInvest=0, ovOut=0, ovTotal=0;
+
+  Object.entries(PHASES).forEach(([key, ph]) => {
+    const allItems = ph.groups.flatMap(g => g.items);
+    const done = allItems.filter(it => {const s=getItem(it.id).status; return s==='done'||s==='na';}).length;
+    const inprog = allItems.filter(it => getItem(it.id).status==='inprogress').length;
+    const invest = allItems.filter(it => getItem(it.id).status==='investigate').length;
+    const total = allItems.length;
+    const pct = total ? Math.round(done/total*100) : 0;
+
+    const num = key.replace('p','');
+    const bar = document.getElementById('prog-p'+num);
+    const pctEl = document.getElementById('pct-p'+num);
+    if (bar) bar.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+
+    // Tab count
+    const tc = document.getElementById('tc-p'+num);
+    if (tc) {
+      tc.textContent = done + '/' + total;
+      tc.className = 'tab-count' + (done===total&&total>0?' done':'');
+    }
+
+    // Group progress updates
+    ph.groups.forEach(grp => {
+      const gDone = grp.items.filter(it => {const s=getItem(it.id).status; return s==='done'||s==='na';}).length;
+      const gEl = document.getElementById('gp-'+grp.id);
+      if (gEl) gEl.textContent = gDone + '/' + grp.items.length + ' done';
+    });
+
+    ovDone += done; ovInprog += inprog; ovInvest += invest;
+    ovOut += allItems.filter(it => !getItem(it.id).status).length;
+    ovTotal += total;
+  });
+
+  document.getElementById('overallCount').textContent = ovDone + ' / ' + ovTotal + ' complete';
+  document.getElementById('ov-outstanding').textContent = ovOut;
+  document.getElementById('ov-inprog').textContent = ovInprog;
+  document.getElementById('ov-investigate').textContent = ovInvest;
+  document.getElementById('ov-done').textContent = ovDone;
+  document.getElementById('ov-total').textContent = ovTotal;
+}
+
+// ══════════════════════════════════════════════
+//  COMMENT POPUP
+// ══════════════════════════════════════════════
+let _activeCommentId = null;
+function openComment(itemId, e) {
+  _activeCommentId = itemId;
+  const popup = document.getElementById('commentPopup');
+  const ta = document.getElementById('commentText');
+  ta.value = getItem(itemId).comment || '';
+  popup.classList.add('visible');
+  // Position near click
+  const rect = e.target.getBoundingClientRect();
+  let top = rect.bottom + window.scrollY + 6;
+  let left = rect.left + window.scrollX - 240;
+  if (left < 8) left = 8;
+  if (left + 320 > window.innerWidth) left = window.innerWidth - 330;
+  popup.style.top = top + 'px';
+  popup.style.left = left + 'px';
+  ta.focus();
+  e.stopPropagation();
+}
+function closeComment() {
+  document.getElementById('commentPopup').classList.remove('visible');
+  _activeCommentId = null;
+}
+function saveComment() {
+  if (!_activeCommentId) return;
+  const val = document.getElementById('commentText').value.trim();
+  setItem(_activeCommentId, 'comment', val);
+  const btn = document.getElementById('cb-' + _activeCommentId);
+  if (btn) {
+    btn.textContent = val ? '💬 Note ●' : '💬 Note';
+    btn.className = 'comment-btn' + (val ? ' has-comment' : '');
+  }
+  closeComment();
+  showToast();
+}
+document.addEventListener('click', (e) => {
+  const popup = document.getElementById('commentPopup');
+  if (popup.classList.contains('visible') && !popup.contains(e.target) && !e.target.classList.contains('comment-btn')) {
+    closeComment();
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeComment(); });
+
+// ══════════════════════════════════════════════
+//  NAV & SECTIONS
+// ══════════════════════════════════════════════
+function showSection(id, tabEl) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (tabEl) tabEl.classList.add('active');
+  window.scrollTo({top: 0, behavior:'smooth'});
+}
+function togglePhase(header) {
+  header.closest('.phase-card').classList.toggle('open');
+}
+
+// ══════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+['p1','p2','p3','p4','p5'].forEach(buildPhase);
+updateProgress();
+</script>
+</body>
+</html>
