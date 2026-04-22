@@ -59,7 +59,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .section.active{display:block;}
 
 /* STATS ROW */
-.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px;}
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:24px;}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;}
 .stat-card .num{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;line-height:1;margin-bottom:3px;}
 .stat-card .lbl{font-size:11px;color:var(--muted);}
@@ -178,6 +178,26 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   .header,.nav,.main,.progress-bar-wrap{padding-left:16px;padding-right:16px;}
   .stats-row{grid-template-columns:repeat(2,1fr);}
 }
+
+/* FLAG BUTTON */
+.flag-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px;border-radius:4px;transition:all .15s;opacity:0.3;line-height:1;}
+.flag-btn:hover{opacity:1;transform:scale(1.2);}
+.flag-btn.flagged{opacity:1;filter:none;}
+
+/* FLAGGED DRILLDOWN MODAL */
+.flag-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:none;align-items:center;justify-content:center;}
+.flag-modal-overlay.visible{display:flex;}
+.flag-modal{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:28px 32px;width:min(700px,94vw);max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.7);}
+.flag-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.flag-modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:#fff;}
+.flag-item-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid #f97316;border-radius:8px;padding:12px 16px;margin-bottom:10px;cursor:pointer;transition:border-color .15s;}
+.flag-item-card:hover{border-color:#fb923c;}
+.flag-item-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:3px;}
+.flag-item-label{font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;}
+.flag-item-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.flag-item-phase{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent2);}
+.flag-item-status{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.flag-item-note{font-size:11px;color:var(--subtle);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
 
 /* COPY LINK ICON */
 .copy-link-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 5px;border-radius:4px;font-size:13px;line-height:1;transition:all .15s;opacity:0.5;}
@@ -315,6 +335,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <div class="stat-card"><div class="num num-amber" id="ov-investigate">—</div><div class="lbl">Need investigation</div></div>
     <div class="stat-card"><div class="num num-green" id="ov-done">—</div><div class="lbl">Completed</div></div>
     <div class="stat-card"><div class="num num-purple" id="ov-total">—</div><div class="lbl">Total tracked items</div></div>
+    <div class="stat-card" style="border-left:3px solid #f97316;cursor:pointer;" onclick="showFlaggedDrilldown()" title="Click to see flagged items">
+      <div class="num" id="ov-flagged" style="color:#fb923c;">—</div>
+      <div class="lbl">🚩 Flagged items <span style="font-size:9px;color:var(--muted);">(click to drill down)</span></div>
+    </div>
   </div>
   <div class="info-box red"><strong>⚠️ Final submission deadline: 12 May 2026, 3:00 PM.</strong> Phase 1 (NDA + Reputational Risk) should be completed first, but all workstreams must align to the milestone plan below.</div>
   <div class="info-box">
@@ -494,6 +518,17 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 </div>
 
 </div><!-- /main -->
+
+<!-- Flagged drilldown modal -->
+<div class="flag-modal-overlay" id="flagModalOverlay">
+  <div class="flag-modal">
+    <div class="flag-modal-header">
+      <div class="flag-modal-title">🚩 Flagged Items</div>
+      <button class="note-modal-close" onclick="closeFlaggedDrilldown()">✕</button>
+    </div>
+    <div id="flagModalList"></div>
+  </div>
+</div>
 
 <!-- Note modal -->
 <div class="note-modal-overlay" id="noteModalOverlay">
@@ -851,6 +886,17 @@ function syncFromFirestore() {
         } catch(e) {}
       }
     }).catch(() => {});
+    // Sync flagged items from Firestore
+    db.collection('rfp_meta').doc('flagged').get().then(doc => {
+      if (doc.exists && doc.data().data) {
+        try {
+          const fl = JSON.parse(doc.data().data);
+          localStorage.setItem('rfp_flagged_v1', JSON.stringify(fl));
+          updateProgress();
+          refreshAllUI();
+        } catch(e) {}
+      }
+    }).catch(() => {});
     showSyncBadge('ok');
   }).catch(err => {
     console.warn('Firestore read failed:', err);
@@ -889,6 +935,13 @@ function refreshRowUI(id) {
   // Update response select
   const respSel = tr.querySelector('.response-sel');
   if (respSel) { respSel.value = st.response || ''; applyResponseStyle(respSel); }
+  // Update flag button
+  const flagBtn = document.getElementById('fb-' + id);
+  if (flagBtn) {
+    const isFlagged = getFlagged().includes(id);
+    flagBtn.classList.toggle('flagged', isFlagged);
+    flagBtn.title = isFlagged ? 'Remove flag' : 'Flag this item';
+  }
   // Update note button
   const btn = document.getElementById('cb-' + id);
   if (btn) {
@@ -987,6 +1040,7 @@ function buildPhase(phaseKey) {
       <th>Item</th>
       ${isCyberQ ? '<th style="width:170px">Response</th>' : ''}
       <th style="width:160px">Status</th>
+      <th style="width:40px">🚩</th>
       <th style="width:110px">Note</th>
     </tr></thead>`;
 
@@ -1068,6 +1122,18 @@ function buildPhase(phaseKey) {
       };
       tdStatus.appendChild(statusSel);
       tr.appendChild(tdStatus);
+
+      // Flag col
+      const tdFlag = document.createElement('td');
+      const flagBtn = document.createElement('button');
+      const isFlagged = getFlagged().includes(item.id);
+      flagBtn.className = 'flag-btn' + (isFlagged ? ' flagged' : '');
+      flagBtn.textContent = '🚩';
+      flagBtn.title = isFlagged ? 'Remove flag' : 'Flag this item';
+      flagBtn.id = 'fb-' + item.id;
+      flagBtn.onclick = (e) => { e.stopPropagation(); toggleFlag(item.id, flagBtn); };
+      tdFlag.appendChild(flagBtn);
+      tr.appendChild(tdFlag);
 
       // Comment col
       const tdComment = document.createElement('td');
@@ -1157,6 +1223,9 @@ function updateProgress() {
   document.getElementById('ov-investigate').textContent = ovInvest;
   document.getElementById('ov-done').textContent = ovDone;
   document.getElementById('ov-total').textContent = ovTotal;
+  const flagCount = getFlagged().length;
+  const flagEl = document.getElementById('ov-flagged');
+  if (flagEl) flagEl.textContent = flagCount > 0 ? flagCount : '—';
 }
 
 // ------------------------------------------------------------
@@ -1722,6 +1791,80 @@ function buildPMMilestones() {
     }
   });
 }
+
+
+// ------------------------------------------------------------
+//  FLAG SYSTEM
+// ------------------------------------------------------------
+function getFlagged() {
+  try { return JSON.parse(localStorage.getItem('rfp_flagged_v1') || '[]'); } catch(e) { return []; }
+}
+function saveFlagged(arr) {
+  localStorage.setItem('rfp_flagged_v1', JSON.stringify(arr));
+  if (_firebaseReady && db) {
+    db.collection('rfp_meta').doc('flagged').set({ data: JSON.stringify(arr) }).catch(() => {});
+  }
+}
+function toggleFlag(itemId, btn) {
+  let flagged = getFlagged();
+  const idx = flagged.indexOf(itemId);
+  if (idx >= 0) {
+    flagged.splice(idx, 1);
+    btn.classList.remove('flagged');
+    btn.title = 'Flag this item';
+  } else {
+    flagged.push(itemId);
+    btn.classList.add('flagged');
+    btn.title = 'Remove flag';
+  }
+  saveFlagged(flagged);
+  updateProgress();
+}
+function showFlaggedDrilldown() {
+  const overlay = document.getElementById('flagModalOverlay');
+  const list = document.getElementById('flagModalList');
+  if (!overlay || !list) return;
+  const flagged = getFlagged();
+  list.innerHTML = '';
+  if (flagged.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;">No flagged items yet. Click the 🚩 icon on any row to flag it.</div>';
+  } else {
+    flagged.forEach(id => {
+      let foundItem = null, foundPhase = '', foundGroup = '';
+      for (const [key, ph] of Object.entries(PHASES)) {
+        for (const grp of ph.groups) {
+          const it = grp.items.find(i => i.id === id);
+          if (it) { foundItem = it; foundPhase = ph.label; foundGroup = grp.title; break; }
+        }
+        if (foundItem) break;
+      }
+      if (!foundItem) return;
+      const st = getItem(id);
+      const statusLabels = { '':'Not started', done:'Done', inprogress:'In Progress', investigate:'Investigate', blocked:'Blocked', na:'N/A' };
+      const noteText = st.comment ? st.comment.replace(/<[^>]*>/g,'').trim().substring(0, 100) : '';
+      const card = document.createElement('div');
+      card.className = 'flag-item-card';
+      card.innerHTML = '<div class="flag-item-id">' + id + '</div>' +
+        '<div class="flag-item-label">' + foundItem.label + '</div>' +
+        '<div class="flag-item-meta">' +
+          '<span class="flag-item-phase">' + foundPhase + '</span>' +
+          '<span class="flag-item-status">' + (statusLabels[st.status] || st.status) + '</span>' +
+          '<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">' + foundGroup + '</span>' +
+        '</div>' +
+        (noteText ? '<div class="flag-item-note">📝 ' + noteText + (noteText.length >= 100 ? '…' : '') + '</div>' : '');
+      card.onclick = () => { closeFlaggedDrilldown(); jumpToItem(id); };
+      list.appendChild(card);
+    });
+  }
+  overlay.classList.add('visible');
+}
+function closeFlaggedDrilldown() {
+  document.getElementById('flagModalOverlay').classList.remove('visible');
+}
+document.addEventListener('click', e => {
+  const overlay = document.getElementById('flagModalOverlay');
+  if (overlay && overlay.classList.contains('visible') && e.target === overlay) closeFlaggedDrilldown();
+});
 
 //  PRINT
 // ------------------------------------------------------------
