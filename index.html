@@ -89,9 +89,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .phase-card.open .phase-body{display:block;}
 
 /* ── TASK TABLE ── */
-.task-table{width:100%;border-collapse:collapse;}
+.task-table{width:100%;border-collapse:collapse;table-layout:fixed;}
 .task-table th{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 16px;text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);}
-.task-table td{padding:10px 16px;font-size:12.5px;border-bottom:1px solid rgba(37,42,56,.5);vertical-align:top;line-height:1.5;}
+.task-table td{padding:10px 16px;font-size:12.5px;border-bottom:1px solid rgba(37,42,56,.5);vertical-align:middle;line-height:1.5;overflow:hidden;}
 .task-table tr:last-child td{border-bottom:none;}
 .task-table tr:hover td{background:rgba(255,255,255,.01);}
 .task-id{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
@@ -110,8 +110,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 
 /* ── COMMENT BOX ── */
 .comment-wrap{position:relative;}
-.comment-btn{background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted);font-size:11px;padding:3px 8px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap;}
-.comment-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.comment-btn{background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
+.comment-btn:hover{border-color:var(--accent);color:var(--accent2);background:var(--blue-dim);}
 .comment-btn.has-comment{border-color:var(--amber-border);color:#fcd34d;background:var(--amber-dim);}
 .comment-popup{position:fixed;z-index:999;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;}
 .comment-popup.visible{display:block;}
@@ -166,6 +166,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <div class="meta-item"><div class="mlabel">Buyer</div><div class="mval">Georgios Mouroutsos · georgios.mouroutsos@alpha.gr</div></div>
     <div class="meta-item"><div class="mlabel">Final Submission</div><div class="mval"><span class="deadline-chip">⚠ 12 May 2026 — 3:00 PM</span></div></div>
     <div class="meta-item"><div class="mlabel">Currency</div><div class="mval">EUR (€) only</div></div>
+    <div class="meta-item"><div class="mlabel">Storage</div><div class="mval"><span id="syncBadge" style="font-family:'DM Mono',monospace;font-size:12px;color:#93c5fd;">☁ Connecting…</span></div></div>
   </div>
 </div>
 
@@ -528,21 +529,141 @@ const PHASES = {
 };
 
 // ══════════════════════════════════════════════
-//  STATE
+//  FIREBASE SETUP
+// ══════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAx4bfcX0jlBrGpyADtp8iS86G_Sj0FTHw",
+  authDomain: "rfp-tracker-bf3ec.firebaseapp.com",
+  projectId: "rfp-tracker-bf3ec",
+  storageBucket: "rfp-tracker-bf3ec.firebasestorage.app",
+  messagingSenderId: "519224132329",
+  appId: "1:519224132329:web:679165fc8f9d43a95c2678",
+  measurementId: "G-FP4W6KNFT9"
+};
+
+// Load Firebase from CDN (compat version — no bundler needed)
+let db = null;
+let _firebaseReady = false;
+let _pendingWrites = {};
+
+function initFirebase() {
+  return new Promise((resolve) => {
+    if (typeof firebase !== 'undefined') {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      _firebaseReady = true;
+      resolve(true);
+    } else {
+      resolve(false);
+    }
+  });
+}
+
+// ══════════════════════════════════════════════
+//  STATE  (localStorage primary + Firestore sync)
 // ══════════════════════════════════════════════
 function loadState() {
   try { return JSON.parse(localStorage.getItem('rfp_state_v2') || '{}'); } catch(e) { return {}; }
 }
-function saveState(state) {
+function saveLocalState(state) {
   localStorage.setItem('rfp_state_v2', JSON.stringify(state));
 }
 let STATE = loadState();
 
-function getItem(id) { return STATE[id] || {status:'', comment:''}; }
+function getItem(id) { return STATE[id] || {status:'', comment:'', response:''}; }
+
 function setItem(id, key, val) {
-  if (!STATE[id]) STATE[id] = {status:'', comment:''};
+  if (!STATE[id]) STATE[id] = {status:'', comment:'', response:''};
   STATE[id][key] = val;
-  saveState(STATE);
+  saveLocalState(STATE);
+  // Sync to Firestore
+  if (_firebaseReady && db) {
+    db.collection('rfp_tracker').doc(id).set(STATE[id], { merge: true })
+      .catch(err => console.warn('Firestore write failed:', err));
+  }
+}
+
+// Pull all data from Firestore and merge into STATE, then refresh UI
+function syncFromFirestore() {
+  if (!_firebaseReady || !db) return;
+  showSyncBadge('syncing');
+  db.collection('rfp_tracker').get().then(snapshot => {
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      STATE[doc.id] = Object.assign({status:'', comment:'', response:''}, data);
+    });
+    saveLocalState(STATE);
+    // Refresh all rendered buttons and selects
+    refreshAllUI();
+    updateProgress();
+    showSyncBadge('ok');
+  }).catch(err => {
+    console.warn('Firestore read failed:', err);
+    showSyncBadge('error');
+  });
+}
+
+// Listen for real-time changes from other users/devices
+function listenFirestore() {
+  if (!_firebaseReady || !db) return;
+  db.collection('rfp_tracker').onSnapshot(snapshot => {
+    snapshot.docChanges().forEach(change => {
+      if (change.type === 'modified' || change.type === 'added') {
+        const id = change.doc.id;
+        const data = change.doc.data();
+        STATE[id] = Object.assign({status:'', comment:'', response:''}, data);
+        // Update the specific row in the UI
+        refreshRowUI(id);
+      }
+    });
+    saveLocalState(STATE);
+    updateProgress();
+  }, err => console.warn('Firestore listener error:', err));
+}
+
+function refreshRowUI(id) {
+  const tr = document.querySelector(`tr[data-item-id="${id}"]`);
+  if (!tr) return;
+  const st = getItem(id);
+  // Update checkbox
+  const cb = tr.querySelector('input[type=checkbox]');
+  if (cb) cb.checked = st.status === 'done';
+  // Update status select
+  const statusSel = tr.querySelector('.status-sel');
+  if (statusSel) { statusSel.value = st.status || ''; applyStatusStyle(statusSel); }
+  // Update response select
+  const respSel = tr.querySelector('.response-sel');
+  if (respSel) { respSel.value = st.response || ''; applyResponseStyle(respSel); }
+  // Update note button
+  const btn = document.getElementById('cb-' + id);
+  if (btn) {
+    btn.textContent = st.comment ? '💬 Note ●' : '💬 Note';
+    btn.className = 'comment-btn' + (st.comment ? ' has-comment' : '');
+  }
+  tr.dataset.status = st.status || '';
+}
+
+function refreshAllUI() {
+  document.querySelectorAll('tr[data-item-id]').forEach(tr => {
+    refreshRowUI(tr.dataset.itemId);
+  });
+}
+
+// ── Sync status badge ──
+function showSyncBadge(state) {
+  let badge = document.getElementById('syncBadge');
+  if (!badge) return;
+  if (state === 'syncing') {
+    badge.textContent = '☁ Syncing…';
+    badge.style.color = '#93c5fd';
+  } else if (state === 'ok') {
+    badge.textContent = '☁ Synced';
+    badge.style.color = '#86efac';
+    setTimeout(() => { if (badge.textContent === '☁ Synced') badge.textContent = '☁ Live'; }, 2000);
+  } else {
+    badge.textContent = '☁ Offline';
+    badge.style.color = '#fca5a5';
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -610,7 +731,7 @@ function buildPhase(phaseKey) {
       <th>Item</th>
       ${isCyberQ ? '<th style="width:170px">Response</th>' : ''}
       <th style="width:160px">Status</th>
-      <th style="width:90px">Note</th>
+      <th style="width:110px">Note</th>
     </tr></thead>`;
 
     const tbody = document.createElement('tbody');
@@ -851,6 +972,34 @@ function showToast() {
 // ══════════════════════════════════════════════
 ['p1','p2','p3','p4','p5'].forEach(buildPhase);
 updateProgress();
+
+// Load Firebase SDK then sync
+(function loadFirebaseSDK() {
+  const scripts = [
+    'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js'
+  ];
+  let loaded = 0;
+  scripts.forEach(src => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => {
+      loaded++;
+      if (loaded === scripts.length) {
+        initFirebase().then(ok => {
+          if (ok) {
+            syncFromFirestore();
+            listenFirestore();
+          } else {
+            showSyncBadge('error');
+          }
+        });
+      }
+    };
+    s.onerror = () => showSyncBadge('error');
+    document.head.appendChild(s);
+  });
+})();
 </script>
 </body>
 </html>
