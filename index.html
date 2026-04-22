@@ -113,12 +113,20 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .comment-btn{background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
 .comment-btn:hover{border-color:var(--accent);color:var(--accent2);background:var(--blue-dim);}
 .comment-btn.has-comment{border-color:var(--amber-border);color:#fcd34d;background:var(--amber-dim);}
-.comment-popup{position:fixed;z-index:999;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;}
-.comment-popup.visible{display:block;}
-.comment-popup textarea{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12.5px;line-height:1.5;padding:8px 10px;resize:vertical;min-height:80px;outline:none;}
-.comment-popup textarea:focus{border-color:var(--accent);}
-.comment-popup-footer{display:flex;gap:8px;margin-top:8px;justify-content:flex-end;}
-.btn-sm{font-size:11px;padding:4px 12px;border-radius:5px;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-weight:500;}
+
+/* Modal overlay */
+.note-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:none;align-items:center;justify-content:center;}
+.note-modal-overlay.visible{display:flex;}
+.note-modal{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:28px 32px;width:min(640px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:16px;}
+.note-modal-header{display:flex;align-items:center;justify-content:space-between;}
+.note-modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#fff;}
+.note-modal-item{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent2);margin-top:2px;}
+.note-modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:4px;}
+.note-modal-close:hover{color:#fff;}
+.note-modal textarea{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.7;padding:14px 16px;resize:vertical;min-height:160px;outline:none;}
+.note-modal textarea:focus{border-color:var(--accent);}
+.note-modal-footer{display:flex;gap:10px;justify-content:flex-end;}
+.btn-sm{font-size:12px;padding:7px 18px;border-radius:6px;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-weight:500;}
 .btn-save{background:var(--accent);color:#fff;}
 .btn-save:hover{background:#2563eb;}
 .btn-cancel{background:var(--surface);color:var(--muted);border:1px solid var(--border2);}
@@ -270,13 +278,21 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 
 </div><!-- /main -->
 
-<!-- Comment popup -->
-<div class="comment-popup" id="commentPopup">
-  <div class="comment-label">💬 Internal Note / Comment</div>
-  <textarea id="commentText" placeholder="Add your note, question, or internal comment here…"></textarea>
-  <div class="comment-popup-footer">
-    <button class="btn-sm btn-cancel" onclick="closeComment()">Cancel</button>
-    <button class="btn-sm btn-save" onclick="saveComment()">Save Note</button>
+<!-- Note modal -->
+<div class="note-modal-overlay" id="noteModalOverlay">
+  <div class="note-modal" id="noteModal">
+    <div class="note-modal-header">
+      <div>
+        <div class="note-modal-title">💬 Internal Note</div>
+        <div class="note-modal-item" id="noteModalItem"></div>
+      </div>
+      <button class="note-modal-close" onclick="closeComment()">✕</button>
+    </div>
+    <textarea id="commentText" placeholder="Add your note, question, or internal comment here…"></textarea>
+    <div class="note-modal-footer">
+      <button class="btn-sm btn-cancel" onclick="closeComment()">Cancel</button>
+      <button class="btn-sm btn-save" onclick="saveComment()">Save Note</button>
+    </div>
   </div>
 </div>
 
@@ -813,7 +829,7 @@ function buildPhase(phaseKey) {
       btn.className = 'comment-btn' + (st.comment ? ' has-comment' : '');
       btn.textContent = st.comment ? '💬 Note ●' : '💬 Note';
       btn.id = 'cb-' + item.id;
-      btn.onclick = (e) => openComment(item.id, e);
+      btn.onclick = (e) => openComment(item.id, item.label, e);
       tdComment.appendChild(btn);
       tr.appendChild(tdComment);
 
@@ -898,28 +914,24 @@ function updateProgress() {
 }
 
 // ══════════════════════════════════════════════
-//  COMMENT POPUP
+//  COMMENT MODAL
 // ══════════════════════════════════════════════
 let _activeCommentId = null;
-function openComment(itemId, e) {
-  _activeCommentId = itemId;
-  const popup = document.getElementById('commentPopup');
-  const ta = document.getElementById('commentText');
-  ta.value = getItem(itemId).comment || '';
-  popup.classList.add('visible');
-  // Position near click
-  const rect = e.target.getBoundingClientRect();
-  let top = rect.bottom + window.scrollY + 6;
-  let left = rect.left + window.scrollX - 240;
-  if (left < 8) left = 8;
-  if (left + 320 > window.innerWidth) left = window.innerWidth - 330;
-  popup.style.top = top + 'px';
-  popup.style.left = left + 'px';
-  ta.focus();
+let _activeCommentLabel = null;
+
+function openComment(itemId, label, e) {
   e.stopPropagation();
+  _activeCommentId = itemId;
+  const overlay = document.getElementById('noteModalOverlay');
+  const ta = document.getElementById('commentText');
+  const itemEl = document.getElementById('noteModalItem');
+  ta.value = getItem(itemId).comment || '';
+  if (itemEl) itemEl.textContent = label || itemId;
+  overlay.classList.add('visible');
+  setTimeout(() => ta.focus(), 50);
 }
 function closeComment() {
-  document.getElementById('commentPopup').classList.remove('visible');
+  document.getElementById('noteModalOverlay').classList.remove('visible');
   _activeCommentId = null;
 }
 function saveComment() {
@@ -934,9 +946,10 @@ function saveComment() {
   closeComment();
   showToast();
 }
+// Close on overlay click
 document.addEventListener('click', (e) => {
-  const popup = document.getElementById('commentPopup');
-  if (popup.classList.contains('visible') && !popup.contains(e.target) && !e.target.classList.contains('comment-btn')) {
+  const overlay = document.getElementById('noteModalOverlay');
+  if (overlay.classList.contains('visible') && e.target === overlay) {
     closeComment();
   }
 });
