@@ -205,6 +205,31 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .qcard-question{font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;background:var(--surface2);border-radius:6px;padding:10px 14px;}
 .qcard-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;}
 
+/* PROJECT MANAGEMENT TAB */
+.pm-milestone{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;}
+.pm-ms-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent2);margin-bottom:4px;}
+.pm-ms-label{font-size:13px;color:#fff;font-weight:500;margin-bottom:6px;}
+.pm-ms-status{font-family:'DM Mono',monospace;font-size:11px;}
+.pm-rag{display:flex;align-items:center;gap:8px;font-size:12px;}
+.pm-rag-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.pm-rag-dot.green{background:var(--green);}
+.pm-rag-dot.amber{background:var(--amber);}
+.pm-rag-dot.red{background:var(--red);}
+.pm-rag-dot.grey{background:var(--muted);}
+.pm-owner-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);}
+.pm-owner-row:last-child{border-bottom:none;}
+.pm-owner-phase{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);width:70px;flex-shrink:0;}
+.pm-owner-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 8px;outline:none;}
+.pm-owner-input:focus{border-color:var(--accent);}
+.pm-blocked-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.pm-blocked-item:last-child{border-bottom:none;}
+.pm-blocked-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;padding-top:2px;min-width:80px;}
+.pm-blocked-label{font-size:12px;color:var(--text);flex:1;cursor:pointer;}
+.pm-blocked-label:hover{color:var(--accent2);}
+.pm-blocked-phase{font-family:'DM Mono',monospace;font-size:10px;color:#fca5a5;white-space:nowrap;}
+.pm-mini-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;min-width:80px;}
+.pm-mini-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .4s;}
+
 /* PRINT */
 @media print {
   body{background:#fff;color:#000;}
@@ -275,6 +300,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   <div class="nav-tab" onclick="showSection('phase4',this)">📁 Phase 4 — Cyber <span class="tab-count" id="tc-p4">0</span></div>
   <div class="nav-tab" onclick="showSection('phase5',this)">💰 Phase 5 — Finance <span class="tab-count" id="tc-p5">0</span></div>
   <div class="nav-tab" onclick="showSection('links',this)">❓ Questions</div>
+  <div class="nav-tab" onclick="showSection('pm',this)">📊 Project Management</div>
 </nav>
 
 <div class="main">
@@ -377,6 +403,94 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 
   <!-- Questions list -->
   <div id="qboard-list"></div>
+</div>
+
+<!-- PROJECT MANAGEMENT -->
+<div class="section" id="pm">
+  <div class="section-title">📊 Project Management</div>
+  <div class="section-sub">Live dashboard — deadline countdown, phase health, milestone status, owner assignments and blocked items.</div>
+
+  <!-- Row 1: Countdown + Overall ring -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;">
+    <div class="stat-card" style="border-left:3px solid var(--red);grid-column:span 1;">
+      <div class="lbl" style="margin-bottom:6px;">⏰ Time to Deadline</div>
+      <div id="pm-countdown" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fca5a5;line-height:1.1;">—</div>
+      <div id="pm-countdown-sub" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;">12 May 2026 · 15:00</div>
+    </div>
+    <div class="stat-card" style="grid-column:span 1;">
+      <div class="lbl" style="margin-bottom:6px;">📈 Overall Completion</div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <svg width="64" height="64" viewBox="0 0 64 64" style="flex-shrink:0;">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="var(--surface2)" stroke-width="8"/>
+          <circle id="pm-ring" cx="32" cy="32" r="26" fill="none" stroke="var(--accent)" stroke-width="8"
+            stroke-dasharray="163.4" stroke-dashoffset="163.4" stroke-linecap="round"
+            transform="rotate(-90 32 32)" style="transition:stroke-dashoffset .6s ease;"/>
+        </svg>
+        <div>
+          <div id="pm-pct-big" style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;">0%</div>
+          <div id="pm-items-done" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">0 / 0 items</div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card" style="grid-column:span 1;">
+      <div class="lbl" style="margin-bottom:10px;">🚦 Phase Health</div>
+      <div id="pm-rag-summary" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+  </div>
+
+  <!-- Row 2: Milestones -->
+  <div class="stat-card" style="margin-bottom:14px;">
+    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">🗓️ Milestones</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" id="pm-milestones">
+      <div class="pm-milestone" data-date="2026-04-24" data-label="Send questions to Bank">
+        <div class="pm-ms-date">24 Apr 2026</div>
+        <div class="pm-ms-label">Send questions to Bank</div>
+        <div class="pm-ms-status"></div>
+      </div>
+      <div class="pm-milestone" data-date="2026-04-30" data-label="Bank provides answers">
+        <div class="pm-ms-date">30 Apr 2026</div>
+        <div class="pm-ms-label">Bank provides answers</div>
+        <div class="pm-ms-status"></div>
+      </div>
+      <div class="pm-milestone" data-date="2026-05-12T15:00" data-label="Final RFP submission">
+        <div class="pm-ms-date">12 May 2026 · 15:00</div>
+        <div class="pm-ms-label">Final RFP submission</div>
+        <div class="pm-ms-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Phase detail table + Owner assignments -->
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:14px;margin-bottom:14px;">
+    <div class="stat-card">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">📋 Phase Breakdown</div>
+      <table style="width:100%;border-collapse:collapse;" id="pm-phase-table">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:left;">Phase</th>
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:center;">Total</th>
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:center;">Done</th>
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:center;">Blocked</th>
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:center;">In Progress</th>
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:left;">Progress</th>
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:center;">RAG</th>
+          </tr>
+        </thead>
+        <tbody id="pm-phase-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="stat-card">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">👤 Phase Owners</div>
+      <div id="pm-owners" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- Row 4: Blocked items -->
+  <div class="stat-card">
+    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">🚫 Blocked Items <span id="pm-blocked-count" style="font-family:'DM Mono',monospace;font-size:11px;color:#fca5a5;margin-left:8px;"></span></div>
+    <div id="pm-blocked-list"></div>
+  </div>
 </div>
 
 </div><!-- /main -->
@@ -1125,6 +1239,7 @@ function showSection(id, tabEl) {
   if (tabEl) tabEl.classList.add('active');
   window.scrollTo({top: 0, behavior:'smooth'});
   if (id === 'links') buildQBoard();
+  if (id === 'pm') buildPMTab();
 }
 function togglePhase(header) {
   header.closest('.phase-card').classList.toggle('open');
@@ -1270,6 +1385,344 @@ function buildQBoard() {
     container.appendChild(card);
   });
 }
+// ------------------------------------------------------------
+//  PROJECT MANAGEMENT
+// ------------------------------------------------------------
+const PHASE_META = {
+  p1: { label:'Phase 1 — Admin',     color:'green', icon:'📁' },
+  p2: { label:'Phase 2 — Business',  color:'amber', icon:'💼' },
+  p3: { label:'Phase 3 — IT',        color:'blue',  icon:'🖥️' },
+  p4: { label:'Phase 4 — Cyber',     color:'red',   icon:'🔐' },
+  p5: { label:'Phase 5 — Finance',   color:'green', icon:'💰' },
+};
+
+function loadOwners() {
+  try { return JSON.parse(localStorage.getItem('rfp_owners_v1') || '{}'); } catch(e) { return {}; }
+}
+function saveOwners(o) {
+  localStorage.setItem('rfp_owners_v1', JSON.stringify(o));
+  if (_firebaseReady && db) {
+    db.collection('rfp_meta').doc('owners').set(o).catch(() => {});
+  }
+}
+
+function buildPMTab() {
+  updateCountdown();
+  buildPMPhaseTable();
+  buildPMOwners();
+  buildPMBlocked();
+  buildPMMilestones();
+}
+
+function updateCountdown() {
+  const deadline = new Date('2026-05-12T15:00:00');
+  const now = new Date();
+  const diff = deadline - now;
+  const el = document.getElementById('pm-countdown');
+  const sub = document.getElementById('pm-countdown-sub');
+  if (!el) return;
+  if (diff <= 0) { el.textContent = 'DEADLINE PASSED'; el.style.color = '#fca5a5'; return; }
+  const days = Math.floor(diff / 86400000);
+  const hrs  = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  el.textContent = days + 'd ' + hrs + 'h ' + mins + 'm';
+  el.style.color = days <= 7 ? '#fca5a5' : days <= 14 ? '#fcd34d' : '#86efac';
+  if (sub) sub.textContent = '12 May 2026 · 15:00 — ' + days + ' days remaining';
+}
+
+function getRagStatus(pct, blocked) {
+  if (blocked > 0) return 'red';
+  if (pct >= 80) return 'green';
+  if (pct >= 40) return 'amber';
+  return 'red';
+}
+
+function buildPMPhaseTable() {
+  const tbody = document.getElementById('pm-phase-tbody');
+  const ragSummary = document.getElementById('pm-rag-summary');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (ragSummary) ragSummary.innerHTML = '';
+  let totalDone = 0, totalAll = 0;
+  Object.entries(PHASES).forEach(([key, ph]) => {
+    const meta = PHASE_META[key];
+    const allItems = ph.groups.flatMap(g => g.items);
+    const total = allItems.length;
+    const done = allItems.filter(it => { const s = getItem(it.id).status; return s==='done'||s==='na'; }).length;
+    const blocked = allItems.filter(it => getItem(it.id).status === 'blocked').length;
+    const inprog = allItems.filter(it => getItem(it.id).status === 'inprogress').length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const rag = getRagStatus(pct, blocked);
+    const ragColors = { green:'#86efac', amber:'#fcd34d', red:'#fca5a5' };
+    const ragLabels = { green:'On Track', amber:'At Risk', red:'Behind / Blocked' };
+    totalDone += done; totalAll += total;
+    const barColor = meta.color === 'blue' ? 'var(--accent)' : 'var(--' + meta.color + ')';
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--border)';
+    tr.innerHTML = '<td style="padding:8px 10px;font-size:12px;color:var(--text);">' + meta.icon + ' ' + meta.label + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">' + total + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#86efac;">' + done + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:' + (blocked>0?'#fca5a5':'var(--muted)') + ';">' + blocked + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#93c5fd;">' + inprog + '</td>' +
+      '<td style="padding:8px 10px;"><div style="display:flex;align-items:center;gap:8px;"><div class="pm-mini-bar" style="flex:1;"><div class="pm-mini-fill" style="width:' + pct + '%;background:' + barColor + ';"></div></div><span style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);min-width:30px;">' + pct + '%</span></div></td>' +
+      '<td style="padding:8px 10px;text-align:center;"><span style="font-family:\'DM Mono\',monospace;font-size:10px;color:' + ragColors[rag] + ';background:' + ragColors[rag] + '22;border:1px solid ' + ragColors[rag] + '44;border-radius:4px;padding:2px 7px;">' + ragLabels[rag] + '</span></td>';
+    tbody.appendChild(tr);
+    if (ragSummary) {
+      const row = document.createElement('div');
+      row.className = 'pm-rag';
+      row.innerHTML = '<div class="pm-rag-dot ' + rag + '"></div><span style="color:var(--subtle);font-size:11px;flex:1;">' + meta.label + '</span><span style="font-family:\'DM Mono\',monospace;font-size:10px;color:' + ragColors[rag] + ';">' + pct + '%</span>';
+      ragSummary.appendChild(row);
+    }
+  });
+  const ring = document.getElementById('pm-ring');
+  const pctBig = document.getElementById('pm-pct-big');
+  const itemsDone = document.getElementById('pm-items-done');
+  const overallPct = totalAll ? Math.round(totalDone / totalAll * 100) : 0;
+  if (ring) {
+    const c = 163.4;
+    ring.style.strokeDashoffset = c - (c * overallPct / 100);
+    ring.style.stroke = overallPct >= 80 ? 'var(--green)' : overallPct >= 40 ? 'var(--amber)' : 'var(--accent)';
+  }
+  if (pctBig) pctBig.textContent = overallPct + '%';
+  if (itemsDone) itemsDone.textContent = totalDone + ' / ' + totalAll + ' items';
+}
+
+function buildPMOwners() {
+  const container = document.getElementById('pm-owners');
+  if (!container) return;
+  container.innerHTML = '';
+  const owners = loadOwners();
+  Object.entries(PHASE_META).forEach(([key, meta]) => {
+    const row = document.createElement('div');
+    row.className = 'pm-owner-row';
+    row.innerHTML = '<span class="pm-owner-phase">' + meta.icon + ' ' + key.toUpperCase() + '</span>';
+    const input = document.createElement('input');
+    input.className = 'pm-owner-input';
+    input.placeholder = 'Assign owner / team...';
+    input.value = owners[key] || '';
+    input.onchange = () => { const o = loadOwners(); o[key] = input.value.trim(); saveOwners(o); };
+    row.appendChild(input);
+    container.appendChild(row);
+  });
+}
+
+function buildPMBlocked() {
+  const container = document.getElementById('pm-blocked-list');
+  const countEl = document.getElementById('pm-blocked-count');
+  if (!container) return;
+  container.innerHTML = '';
+  const blocked = [];
+  Object.entries(PHASES).forEach(([key, ph]) => {
+    const meta = PHASE_META[key];
+    ph.groups.forEach(grp => {
+      grp.items.forEach(item => {
+        if (getItem(item.id).status === 'blocked') blocked.push({ item, phase: meta.label });
+      });
+    });
+  });
+  if (countEl) countEl.textContent = blocked.length > 0 ? '(' + blocked.length + ')' : '';
+  if (blocked.length === 0) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;font-family:\'DM Mono\',monospace;">No blocked items — great!</div>';
+    return;
+  }
+  blocked.forEach(({ item, phase }) => {
+    const row = document.createElement('div');
+    row.className = 'pm-blocked-item';
+    const note = getItem(item.id).comment;
+    const noteText = note ? note.replace(/<[^>]*>/g,'').trim().substring(0, 80) : '';
+    row.innerHTML = '<span class="pm-blocked-id">' + item.id + '</span><div style="flex:1;"><div class="pm-blocked-label" onclick="jumpToItem(\'' + item.id + '\')">' + item.label + '</div>' + (noteText ? '<div style="font-size:11px;color:var(--muted);margin-top:2px;">📝 ' + noteText + (noteText.length>=80?'…':'') + '</div>' : '') + '</div><span class="pm-blocked-phase">' + phase + '</span>';
+    container.appendChild(row);
+  });
+}
+
+function buildPMMilestones() {
+  const now = new Date();
+  document.querySelectorAll('.pm-milestone').forEach(el => {
+    const ms = new Date(el.dataset.date);
+    const statusEl = el.querySelector('.pm-ms-status');
+    const diff = ms - now;
+    const days = Math.ceil(diff / 86400000);
+    if (diff < 0) {
+      el.style.borderColor = 'var(--muted)'; statusEl.style.color = 'var(--muted)'; statusEl.textContent = 'Passed';
+    } else if (days <= 3) {
+      el.style.borderColor = 'var(--red-border)'; el.style.background = 'var(--red-dim)'; statusEl.style.color = '#fca5a5'; statusEl.textContent = days + 'd remaining';
+    } else if (days <= 7) {
+      el.style.borderColor = 'var(--amber-border)'; el.style.background = 'var(--amber-dim)'; statusEl.style.color = '#fcd34d'; statusEl.textContent = days + ' days remaining';
+    } else {
+      el.style.borderColor = 'var(--border2)'; statusEl.style.color = '#86efac'; statusEl.textContent = days + ' days remaining';
+    }
+  });
+}
+
+// ------------------------------------------------------------
+//  PROJECT MANAGEMENT
+// ------------------------------------------------------------
+const PHASE_META = {
+  p1: { label:'Phase 1 — Admin',     color:'green', icon:'📁' },
+  p2: { label:'Phase 2 — Business',  color:'amber', icon:'💼' },
+  p3: { label:'Phase 3 — IT',        color:'blue',  icon:'🖥️' },
+  p4: { label:'Phase 4 — Cyber',     color:'red',   icon:'🔐' },
+  p5: { label:'Phase 5 — Finance',   color:'green', icon:'💰' },
+};
+
+function loadOwners() {
+  try { return JSON.parse(localStorage.getItem('rfp_owners_v1') || '{}'); } catch(e) { return {}; }
+}
+function saveOwners(o) {
+  localStorage.setItem('rfp_owners_v1', JSON.stringify(o));
+  if (_firebaseReady && db) {
+    db.collection('rfp_meta').doc('owners').set(o).catch(() => {});
+  }
+}
+
+function buildPMTab() {
+  updateCountdown();
+  buildPMPhaseTable();
+  buildPMOwners();
+  buildPMBlocked();
+  buildPMMilestones();
+}
+
+function updateCountdown() {
+  const deadline = new Date('2026-05-12T15:00:00');
+  const now = new Date();
+  const diff = deadline - now;
+  const el = document.getElementById('pm-countdown');
+  const sub = document.getElementById('pm-countdown-sub');
+  if (!el) return;
+  if (diff <= 0) { el.textContent = 'DEADLINE PASSED'; el.style.color = '#fca5a5'; return; }
+  const days = Math.floor(diff / 86400000);
+  const hrs  = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  el.textContent = days + 'd ' + hrs + 'h ' + mins + 'm';
+  el.style.color = days <= 7 ? '#fca5a5' : days <= 14 ? '#fcd34d' : '#86efac';
+  if (sub) sub.textContent = '12 May 2026 · 15:00 — ' + days + ' days remaining';
+}
+
+function getRagStatus(pct, blocked) {
+  if (blocked > 0) return 'red';
+  if (pct >= 80) return 'green';
+  if (pct >= 40) return 'amber';
+  return 'red';
+}
+
+function buildPMPhaseTable() {
+  const tbody = document.getElementById('pm-phase-tbody');
+  const ragSummary = document.getElementById('pm-rag-summary');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (ragSummary) ragSummary.innerHTML = '';
+  let totalDone = 0, totalAll = 0;
+  Object.entries(PHASES).forEach(([key, ph]) => {
+    const meta = PHASE_META[key];
+    const allItems = ph.groups.flatMap(g => g.items);
+    const total = allItems.length;
+    const done = allItems.filter(it => { const s = getItem(it.id).status; return s==='done'||s==='na'; }).length;
+    const blocked = allItems.filter(it => getItem(it.id).status === 'blocked').length;
+    const inprog = allItems.filter(it => getItem(it.id).status === 'inprogress').length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const rag = getRagStatus(pct, blocked);
+    const ragColors = { green:'#86efac', amber:'#fcd34d', red:'#fca5a5' };
+    const ragLabels = { green:'On Track', amber:'At Risk', red:'Behind / Blocked' };
+    totalDone += done; totalAll += total;
+    const barColor = meta.color === 'blue' ? 'var(--accent)' : 'var(--' + meta.color + ')';
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--border)';
+    tr.innerHTML = '<td style="padding:8px 10px;font-size:12px;color:var(--text);">' + meta.icon + ' ' + meta.label + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">' + total + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#86efac;">' + done + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:' + (blocked>0?'#fca5a5':'var(--muted)') + ';">' + blocked + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#93c5fd;">' + inprog + '</td>' +
+      '<td style="padding:8px 10px;"><div style="display:flex;align-items:center;gap:8px;"><div class="pm-mini-bar" style="flex:1;"><div class="pm-mini-fill" style="width:' + pct + '%;background:' + barColor + ';"></div></div><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);min-width:30px;">' + pct + '%</span></div></td>' +
+      '<td style="padding:8px 10px;text-align:center;"><span style="font-family:'DM Mono',monospace;font-size:10px;color:' + ragColors[rag] + ';background:' + ragColors[rag] + '22;border:1px solid ' + ragColors[rag] + '44;border-radius:4px;padding:2px 7px;">' + ragLabels[rag] + '</span></td>';
+    tbody.appendChild(tr);
+    if (ragSummary) {
+      const row = document.createElement('div');
+      row.className = 'pm-rag';
+      row.innerHTML = '<div class="pm-rag-dot ' + rag + '"></div><span style="color:var(--subtle);font-size:11px;flex:1;">' + meta.label + '</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:' + ragColors[rag] + ';">' + pct + '%</span>';
+      ragSummary.appendChild(row);
+    }
+  });
+  const ring = document.getElementById('pm-ring');
+  const pctBig = document.getElementById('pm-pct-big');
+  const itemsDone = document.getElementById('pm-items-done');
+  const overallPct = totalAll ? Math.round(totalDone / totalAll * 100) : 0;
+  if (ring) {
+    const c = 163.4;
+    ring.style.strokeDashoffset = c - (c * overallPct / 100);
+    ring.style.stroke = overallPct >= 80 ? 'var(--green)' : overallPct >= 40 ? 'var(--amber)' : 'var(--accent)';
+  }
+  if (pctBig) pctBig.textContent = overallPct + '%';
+  if (itemsDone) itemsDone.textContent = totalDone + ' / ' + totalAll + ' items';
+}
+
+function buildPMOwners() {
+  const container = document.getElementById('pm-owners');
+  if (!container) return;
+  container.innerHTML = '';
+  const owners = loadOwners();
+  Object.entries(PHASE_META).forEach(([key, meta]) => {
+    const row = document.createElement('div');
+    row.className = 'pm-owner-row';
+    row.innerHTML = '<span class="pm-owner-phase">' + meta.icon + ' ' + key.toUpperCase() + '</span>';
+    const input = document.createElement('input');
+    input.className = 'pm-owner-input';
+    input.placeholder = 'Assign owner / team...';
+    input.value = owners[key] || '';
+    input.onchange = () => { const o = loadOwners(); o[key] = input.value.trim(); saveOwners(o); };
+    row.appendChild(input);
+    container.appendChild(row);
+  });
+}
+
+function buildPMBlocked() {
+  const container = document.getElementById('pm-blocked-list');
+  const countEl = document.getElementById('pm-blocked-count');
+  if (!container) return;
+  container.innerHTML = '';
+  const blocked = [];
+  Object.entries(PHASES).forEach(([key, ph]) => {
+    const meta = PHASE_META[key];
+    ph.groups.forEach(grp => {
+      grp.items.forEach(item => {
+        if (getItem(item.id).status === 'blocked') blocked.push({ item, phase: meta.label });
+      });
+    });
+  });
+  if (countEl) countEl.textContent = blocked.length > 0 ? '(' + blocked.length + ')' : '';
+  if (blocked.length === 0) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;font-family:'DM Mono',monospace;">No blocked items — great!</div>';
+    return;
+  }
+  blocked.forEach(({ item, phase }) => {
+    const row = document.createElement('div');
+    row.className = 'pm-blocked-item';
+    const note = getItem(item.id).comment;
+    const noteText = note ? note.replace(/<[^>]*>/g,'').trim().substring(0, 80) : '';
+    row.innerHTML = '<span class="pm-blocked-id">' + item.id + '</span><div style="flex:1;"><div class="pm-blocked-label" onclick="jumpToItem('' + item.id + '')">' + item.label + '</div>' + (noteText ? '<div style="font-size:11px;color:var(--muted);margin-top:2px;">📝 ' + noteText + (noteText.length>=80?'…':'') + '</div>' : '') + '</div><span class="pm-blocked-phase">' + phase + '</span>';
+    container.appendChild(row);
+  });
+}
+
+function buildPMMilestones() {
+  const now = new Date();
+  document.querySelectorAll('.pm-milestone').forEach(el => {
+    const ms = new Date(el.dataset.date);
+    const statusEl = el.querySelector('.pm-ms-status');
+    const diff = ms - now;
+    const days = Math.ceil(diff / 86400000);
+    if (diff < 0) {
+      el.style.borderColor = 'var(--muted)'; statusEl.style.color = 'var(--muted)'; statusEl.textContent = 'Passed';
+    } else if (days <= 3) {
+      el.style.borderColor = 'var(--red-border)'; el.style.background = 'var(--red-dim)'; statusEl.style.color = '#fca5a5'; statusEl.textContent = days + 'd remaining';
+    } else if (days <= 7) {
+      el.style.borderColor = 'var(--amber-border)'; el.style.background = 'var(--amber-dim)'; statusEl.style.color = '#fcd34d'; statusEl.textContent = days + ' days remaining';
+    } else {
+      el.style.borderColor = 'var(--border2)'; statusEl.style.color = '#86efac'; statusEl.textContent = days + ' days remaining';
+    }
+  });
+}
+
 //  PRINT
 // ------------------------------------------------------------
 function printSection() {
