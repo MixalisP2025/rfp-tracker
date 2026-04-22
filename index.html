@@ -1638,13 +1638,6 @@ function buildPMMilestones() {
 // ------------------------------------------------------------
 //  PROJECT MANAGEMENT
 // ------------------------------------------------------------
-const PHASE_META = {
-  p1: { label:'Phase 1 — Admin',     color:'green', icon:'📁' },
-  p2: { label:'Phase 2 — Business',  color:'amber', icon:'💼' },
-  p3: { label:'Phase 3 — IT',        color:'blue',  icon:'🖥️' },
-  p4: { label:'Phase 4 — Cyber',     color:'red',   icon:'🔐' },
-  p5: { label:'Phase 5 — Finance',   color:'green', icon:'💰' },
-};
 
 function loadOwners() {
   try { return JSON.parse(localStorage.getItem('rfp_owners_v1') || '{}'); } catch(e) { return {}; }
