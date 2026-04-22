@@ -160,11 +160,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="header">
   <div class="header-label">RFP Response Tracker · Advanced Information Services AE · v2</div>
   <h1>Alpha Bank — <span>Securities Services Management Platform</span></h1>
-  <p>Interactive tracker with progress monitoring, status tracking, and comments. All data is saved in your browser automatically.</p>
+  <p>Interactive tracker with progress monitoring, milestone visibility, status tracking, and comments. All data is saved in your browser automatically.</p>
   <div class="meta-row">
     <div class="meta-item"><div class="mlabel">Reference</div><div class="mval">CS00460 / NDA 1187</div></div>
     <div class="meta-item"><div class="mlabel">Buyer</div><div class="mval">Georgios Mouroutsos · georgios.mouroutsos@alpha.gr</div></div>
-    <div class="meta-item"><div class="mlabel">Deadline</div><div class="mval"><span class="deadline-chip">⚠ 24 March 2026 — 4:00 PM</span></div></div>
+    <div class="meta-item"><div class="mlabel">Final Submission</div><div class="mval"><span class="deadline-chip">⚠ 12 May 2026 — 3:00 PM</span></div></div>
     <div class="meta-item"><div class="mlabel">Currency</div><div class="mval">EUR (€) only</div></div>
   </div>
 </div>
@@ -200,7 +200,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <div class="stat-card"><div class="num num-green" id="ov-done">—</div><div class="lbl">Completed</div></div>
     <div class="stat-card"><div class="num num-purple" id="ov-total">—</div><div class="lbl">Total tracked items</div></div>
   </div>
-  <div class="info-box red"><strong>⚠ Deadline: 24 March 2026, 4:00 PM.</strong> Work through all phases before this date. Phase 1 (NDA + Reputational Risk) must be done first as it involves signed legal documents.</div>
+  <div class="info-box red"><strong>⚠ Final submission deadline: 12 May 2026, 3:00 PM.</strong> Phase 1 (NDA + Reputational Risk) should be completed first, but all workstreams must align to the milestone plan below.</div>
+  <div class="info-box">
+  <strong>📅 RFP Milestones</strong><br>
+  • <strong>24 April 2026</strong> — End of Friday: send questions to the Bank<br>
+  • <strong>30 April 2026</strong> — Bank provides responses to the questions<br>
+  • <strong>12 May 2026, 3:00 PM</strong> — Submission of the RFP responses
+</div>
   <div class="info-box amber"><strong>🔐 New: Cybersecurity section added.</strong> The CyberSecurity file contains 59 mandatory security requirements, 42 SR questions (On-Prem questionnaire), 42 SR questions (Cloud questionnaire), 73 Cloud Service questions (CS1–CS73), and 123 Cloud Provider questions (CP1–CP123). This is the largest single section. Assign your CISO / security architect immediately.</div>
   <div class="info-box green"><strong>💡 How to use this tracker:</strong> Set a status on each item using the dropdown. Click "💬 Note" to add a comment or internal note to any item. Your progress and all comments are saved automatically in this browser. Use the filter buttons inside each phase to focus on outstanding or blocked items.</div>
 
@@ -289,7 +295,7 @@ const PHASES = {
         {id:'p1-02', label:'Sign & upload NDA', desc:'Alpha Bank_NDA_RFP Securities Services Management Platform.docx — obtain authorised signatory sign-off and upload to portal Question 1.', hint:'Management / legal'},
         {id:'p1-03', label:'Complete Reputational Risk Questionnaire', desc:'Locate the Reputational Risk Questionnaire sent by Alpha Bank, have compliance/legal fill it in, and upload against portal Question 2.', hint:'Compliance team'},
         {id:'p1-04', label:'Confirm submission contact', desc:'Contact person: Stathis Alafris (Partner). Send to: georgios.mouroutsos@alpha.gr. Confirm this is still the correct point of contact.', hint:'Confirmed in draft response'},
-        {id:'p1-05', label:'Change response status from DRAFT to FINAL', desc:'Portal currently shows response status as "Draft". Ensure it is submitted/finalised before 24.03.26 16:00.', hint:'Portal action required'},
+        {id:'p1-05', label:'Change response status from DRAFT to FINAL', desc:'Portal currently shows response status as "Draft". Ensure it is submitted/finalised before 12.05.26 15:00.', hint:'Portal action required'},
       ]
     }]
   },
