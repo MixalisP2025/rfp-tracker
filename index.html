@@ -178,6 +178,43 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   .header,.nav,.main,.progress-bar-wrap{padding-left:16px;padding-right:16px;}
   .stats-row{grid-template-columns:repeat(2,1fr);}
 }
+
+/* ── PRINT ── */
+@media print {
+  body{background:#fff;color:#000;}
+  .header{background:#fff;border-bottom:2px solid #000;padding:16px 24px;color:#000;}
+  .header-label{color:#555;}
+  .header h1{color:#000;font-size:20px;}
+  .header h1 span{color:#1d4ed8;}
+  .header p,.meta-row{color:#333;}
+  .deadline-chip{background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c;}
+  .progress-bar-wrap,.nav,.filter-bar,.phase-toggle,.print-hide{display:none!important;}
+  .main{padding:0;max-width:100%;}
+  .section{display:block!important;}
+  .section:not(.print-active){display:none!important;}
+  .phase-card{border:1px solid #ccc;border-radius:6px;margin-bottom:12px;break-inside:avoid;}
+  .phase-header{background:#f8fafc;padding:10px 16px;}
+  .phase-num{background:#e2e8f0;color:#475569;border:1px solid #cbd5e1;}
+  .phase-title{color:#000;}
+  .phase-progress{color:#64748b;}
+  .phase-body{display:block!important;}
+  .task-table th{background:#f1f5f9;color:#475569;border-bottom:1px solid #cbd5e1;}
+  .task-table td{border-bottom:1px solid #e2e8f0;color:#1e293b;vertical-align:top;}
+  .task-desc strong{color:#000;}
+  .task-desc .sub{color:#475569;}
+  .status-sel,.response-sel{border:1px solid #cbd5e1;background:#f8fafc;color:#1e293b;-webkit-appearance:none;appearance:none;}
+  .status-sel.s-done{background:#dcfce7;color:#166534;}
+  .status-sel.s-inprogress{background:#dbeafe;color:#1e40af;}
+  .status-sel.s-investigate{background:#fef9c3;color:#854d0e;}
+  .status-sel.s-blocked{background:#fee2e2;color:#991b1b;}
+  .status-sel.s-na{background:#f3e8ff;color:#6b21a8;}
+  .comment-btn{display:none!important;}
+  /* Print notes inline */
+  .print-note{display:block!important;margin-top:6px;padding:8px 12px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;font-size:12px;color:#1e293b;line-height:1.6;}
+  .print-note-label{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#92400e;margin-bottom:4px;}
+  input[type=checkbox]{display:none;}
+  @page{margin:1.5cm;}
+}
 </style>
 </head>
 <body>
@@ -190,8 +227,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <div class="meta-item"><div class="mlabel">Reference</div><div class="mval">CS00460 / NDA 1187</div></div>
     <div class="meta-item"><div class="mlabel">Buyer</div><div class="mval">Georgios Mouroutsos · georgios.mouroutsos@alpha.gr</div></div>
     <div class="meta-item"><div class="mlabel">Final Submission</div><div class="mval"><span class="deadline-chip">⚠ 12 May 2026 — 3:00 PM</span></div></div>
-    <div class="meta-item"><div class="mlabel">Currency</div><div class="mval">EUR (€) only</div></div>
     <div class="meta-item"><div class="mlabel">Storage</div><div class="mval"><span id="syncBadge" style="font-family:'DM Mono',monospace;font-size:12px;color:#93c5fd;">☁ Connecting…</span></div></div>
+    <div class="meta-item"><button onclick="printSection()" style="font-family:'DM Mono',monospace;font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--subtle);cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--subtle)'">🖨 Print Section</button></div>
   </div>
 </div>
 
@@ -1036,6 +1073,41 @@ function showToast() {
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ══════════════════════════════════════════════
+//  PRINT
+// ══════════════════════════════════════════════
+function printSection() {
+  // Mark the currently active section for print
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('print-active'));
+  const active = document.querySelector('.section.active');
+  if (active) active.classList.add('print-active');
+
+  // Inject inline notes into each row before printing
+  const noteEls = [];
+  document.querySelectorAll('tr[data-item-id]').forEach(tr => {
+    const id = tr.dataset.itemId;
+    const st = getItem(id);
+    if (st.comment) {
+      const td = tr.querySelector('td:last-child');
+      if (td) {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'print-note';
+        noteDiv.style.display = 'none'; // hidden on screen, shown in print CSS
+        noteDiv.innerHTML = `<div class="print-note-label">📝 Note</div>${st.comment}`;
+        noteDiv.id = 'pn-' + id;
+        // Insert into the description cell instead for better layout
+        const descTd = tr.querySelector('.task-desc');
+        if (descTd) { descTd.appendChild(noteDiv); noteEls.push(noteDiv); }
+      }
+    }
+  });
+
+  window.print();
+
+  // Clean up injected note divs after print
+  noteEls.forEach(el => el.remove());
 }
 
 // ══════════════════════════════════════════════
