@@ -897,6 +897,18 @@ function syncFromFirestore() {
         } catch(e) {}
       }
     }).catch(() => {});
+    // Sync phase owners from Firestore
+    db.collection('rfp_meta').doc('owners').get().then(doc => {
+      if (doc.exists) {
+        try {
+          const owners = doc.data();
+          localStorage.setItem('rfp_owners_v1', JSON.stringify(owners));
+          // Refresh owner inputs if PM tab is open
+          const pmSection = document.getElementById('pm');
+          if (pmSection && pmSection.classList.contains('active')) buildPMOwners();
+        } catch(e) {}
+      }
+    }).catch(() => {});
     showSyncBadge('ok');
   }).catch(err => {
     console.warn('Firestore read failed:', err);
