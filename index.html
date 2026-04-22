@@ -1702,18 +1702,18 @@ function buildPMPhaseTable() {
     const barColor = meta.color === 'blue' ? 'var(--accent)' : 'var(--' + meta.color + ')';
     const tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid var(--border)';
-    tr.innerHTML = '<td style="padding:8px 10px;font-size:12px;color:var(--text);">' + meta.icon + ' ' + meta.label + '</td>' +
-      '<td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">' + total + '</td>' +
-      '<td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#86efac;">' + done + '</td>' +
-      '<td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:' + (blocked>0?'#fca5a5':'var(--muted)') + ';">' + blocked + '</td>' +
-      '<td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#93c5fd;">' + inprog + '</td>' +
-      '<td style="padding:8px 10px;"><div style="display:flex;align-items:center;gap:8px;"><div class="pm-mini-bar" style="flex:1;"><div class="pm-mini-fill" style="width:' + pct + '%;background:' + barColor + ';"></div></div><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);min-width:30px;">' + pct + '%</span></div></td>' +
-      '<td style="padding:8px 10px;text-align:center;"><span style="font-family:'DM Mono',monospace;font-size:10px;color:' + ragColors[rag] + ';background:' + ragColors[rag] + '22;border:1px solid ' + ragColors[rag] + '44;border-radius:4px;padding:2px 7px;">' + ragLabels[rag] + '</span></td>';
+    tr.innerHTML = `<td style="padding:8px 10px;font-size:12px;color:var(--text);">${meta.icon} ${meta.label}</td>
+      <td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">${total}</td>
+      <td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#86efac;">${done}</td>
+      <td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:${blocked>0?'#fca5a5':'var(--muted)'};">${blocked}</td>
+      <td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#93c5fd;">${inprog}</td>
+      <td style="padding:8px 10px;"><div style="display:flex;align-items:center;gap:8px;"><div class="pm-mini-bar" style="flex:1;"><div class="pm-mini-fill" style="width:${pct}%;background:${barColor};"></div></div><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);min-width:30px;">${pct}%</span></div></td>
+      <td style="padding:8px 10px;text-align:center;"><span style="font-family:'DM Mono',monospace;font-size:10px;color:${ragColors[rag]};background:${ragColors[rag]}22;border:1px solid ${ragColors[rag]}44;border-radius:4px;padding:2px 7px;">${ragLabels[rag]}</span></td>`;
     tbody.appendChild(tr);
     if (ragSummary) {
       const row = document.createElement('div');
       row.className = 'pm-rag';
-      row.innerHTML = '<div class="pm-rag-dot ' + rag + '"></div><span style="color:var(--subtle);font-size:11px;flex:1;">' + meta.label + '</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:' + ragColors[rag] + ';">' + pct + '%</span>';
+      row.innerHTML = `<div class="pm-rag-dot ${rag}"></div><span style="color:var(--subtle);font-size:11px;flex:1;">${meta.label}</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:${ragColors[rag]};">${pct}%</span>`;
       ragSummary.appendChild(row);
     }
   });
@@ -1765,7 +1765,7 @@ function buildPMBlocked() {
   });
   if (countEl) countEl.textContent = blocked.length > 0 ? '(' + blocked.length + ')' : '';
   if (blocked.length === 0) {
-    container.innerHTML = '<div style="color:var(--muted);font-size:13px;font-family:'DM Mono',monospace;">No blocked items — great!</div>';
+    container.innerHTML = `<div style="color:var(--muted);font-size:13px;font-family:'DM Mono',monospace;">No blocked items — great!</div>`;
     return;
   }
   blocked.forEach(({ item, phase }) => {
@@ -1773,7 +1773,7 @@ function buildPMBlocked() {
     row.className = 'pm-blocked-item';
     const note = getItem(item.id).comment;
     const noteText = note ? note.replace(/<[^>]*>/g,'').trim().substring(0, 80) : '';
-    row.innerHTML = '<span class="pm-blocked-id">' + item.id + '</span><div style="flex:1;"><div class="pm-blocked-label" onclick="jumpToItem('' + item.id + '')">' + item.label + '</div>' + (noteText ? '<div style="font-size:11px;color:var(--muted);margin-top:2px;">📝 ' + noteText + (noteText.length>=80?'…':'') + '</div>' : '') + '</div><span class="pm-blocked-phase">' + phase + '</span>';
+    row.innerHTML = `<span class="pm-blocked-id">${item.id}</span><div style="flex:1;"><div class="pm-blocked-label" onclick="jumpToItem('${item.id}')">${item.label}</div>${noteText ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">📝 ${noteText}${noteText.length>=80?'…':''}</div>` : ''}</div><span class="pm-blocked-phase">${phase}</span>`;
     container.appendChild(row);
   });
 }
@@ -1832,7 +1832,7 @@ function showFlaggedDrilldown() {
   const flagged = getFlagged();
   list.innerHTML = '';
   if (flagged.length === 0) {
-    list.innerHTML = '<div style="color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;">No flagged items yet. Click the 🚩 icon on any row to flag it.</div>';
+    list.innerHTML = `<div style="color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;">No flagged items yet. Click the 🚩 icon on any row to flag it.</div>`;
   } else {
     flagged.forEach(id => {
       let foundItem = null, foundPhase = '', foundGroup = '';
@@ -1849,14 +1849,14 @@ function showFlaggedDrilldown() {
       const noteText = st.comment ? st.comment.replace(/<[^>]*>/g,'').trim().substring(0, 100) : '';
       const card = document.createElement('div');
       card.className = 'flag-item-card';
-      card.innerHTML = '<div class="flag-item-id">' + id + '</div>' +
-        '<div class="flag-item-label">' + foundItem.label + '</div>' +
-        '<div class="flag-item-meta">' +
-          '<span class="flag-item-phase">' + foundPhase + '</span>' +
-          '<span class="flag-item-status">' + (statusLabels[st.status] || st.status) + '</span>' +
-          '<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">' + foundGroup + '</span>' +
-        '</div>' +
-        (noteText ? '<div class="flag-item-note">📝 ' + noteText + (noteText.length >= 100 ? '…' : '') + '</div>' : '');
+      card.innerHTML = `<div class="flag-item-id">${id}</div>
+        <div class="flag-item-label">${foundItem.label}</div>
+        <div class="flag-item-meta">
+          <span class="flag-item-phase">${foundPhase}</span>
+          <span class="flag-item-status">${statusLabels[st.status] || st.status}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${foundGroup}</span>
+        </div>
+        ${noteText ? `<div class="flag-item-note">📝 ${noteText}${noteText.length >= 100 ? '…' : ''}</div>` : ''}`;
       card.onclick = () => { closeFlaggedDrilldown(); jumpToItem(id); };
       list.appendChild(card);
     });
