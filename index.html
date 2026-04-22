@@ -123,8 +123,25 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .note-modal-item{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent2);margin-top:2px;}
 .note-modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:4px;}
 .note-modal-close:hover{color:#fff;}
-.note-modal textarea{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.7;padding:14px 16px;resize:vertical;min-height:160px;outline:none;}
-.note-modal textarea:focus{border-color:var(--accent);}
+
+/* Formatting toolbar */
+.note-toolbar{display:flex;gap:4px;align-items:center;background:var(--surface);border:1px solid var(--border2);border-radius:8px 8px 0 0;padding:6px 10px;flex-wrap:wrap;}
+.note-toolbar-btn{background:none;border:1px solid transparent;border-radius:5px;color:var(--subtle);font-size:13px;width:30px;height:28px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.note-toolbar-btn:hover{background:var(--surface2);border-color:var(--border2);color:var(--text);}
+.note-toolbar-btn.active{background:var(--blue-dim);border-color:var(--blue-border);color:#93c5fd;}
+.note-toolbar-sep{width:1px;height:20px;background:var(--border2);margin:0 4px;}
+
+/* Rich text editor area */
+.note-editor{width:100%;background:var(--surface);border:1px solid var(--border2);border-top:none;border-radius:0 0 8px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.7;padding:14px 16px;min-height:180px;max-height:340px;overflow-y:auto;outline:none;}
+.note-editor:focus{border-color:var(--accent);}
+.note-editor:empty:before{content:attr(data-placeholder);color:var(--muted);pointer-events:none;}
+.note-editor ul{padding-left:20px;margin:4px 0;}
+.note-editor ol{padding-left:20px;margin:4px 0;}
+.note-editor li{margin:2px 0;}
+.note-editor b,.note-editor strong{color:#fff;font-weight:700;}
+.note-editor i,.note-editor em{font-style:italic;color:var(--subtle);}
+.note-editor u{text-decoration:underline;}
+
 .note-modal-footer{display:flex;gap:10px;justify-content:flex-end;}
 .btn-sm{font-size:12px;padding:7px 18px;border-radius:6px;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-weight:500;}
 .btn-save{background:var(--accent);color:#fff;}
@@ -288,7 +305,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
       </div>
       <button class="note-modal-close" onclick="closeComment()">✕</button>
     </div>
-    <textarea id="commentText" placeholder="Add your note, question, or internal comment here…"></textarea>
+    <div>
+      <div class="note-toolbar">
+        <button class="note-toolbar-btn" onclick="noteFormat('bold')" title="Bold"><b>B</b></button>
+        <button class="note-toolbar-btn" onclick="noteFormat('italic')" title="Italic"><i>I</i></button>
+        <button class="note-toolbar-btn" onclick="noteFormat('underline')" title="Underline"><u>U</u></button>
+        <div class="note-toolbar-sep"></div>
+        <button class="note-toolbar-btn" onclick="noteFormat('insertUnorderedList')" title="Bullet list">• ≡</button>
+        <button class="note-toolbar-btn" onclick="noteFormat('insertOrderedList')" title="Numbered list">1. ≡</button>
+        <div class="note-toolbar-sep"></div>
+        <button class="note-toolbar-btn" onclick="noteFormat('removeFormat')" title="Clear formatting" style="font-size:11px;">✕ fmt</button>
+      </div>
+      <div class="note-editor" id="noteEditor" contenteditable="true" data-placeholder="Add your note, question, or internal comment here…"></div>
+    </div>
     <div class="note-modal-footer">
       <button class="btn-sm btn-cancel" onclick="closeComment()">Cancel</button>
       <button class="btn-sm btn-save" onclick="saveComment()">Save Note</button>
@@ -653,8 +682,9 @@ function refreshRowUI(id) {
   // Update note button
   const btn = document.getElementById('cb-' + id);
   if (btn) {
-    btn.textContent = st.comment ? '💬 Note ●' : '💬 Note';
-    btn.className = 'comment-btn' + (st.comment ? ' has-comment' : '');
+    const hasNote = st.comment && st.comment.replace(/<[^>]*>/g,'').trim() !== '';
+    btn.textContent = hasNote ? '💬 Note ●' : '💬 Note';
+    btn.className = 'comment-btn' + (hasNote ? ' has-comment' : '');
   }
   tr.dataset.status = st.status || '';
 }
@@ -919,33 +949,55 @@ function updateProgress() {
 let _activeCommentId = null;
 let _activeCommentLabel = null;
 
+function noteFormat(cmd) {
+  document.getElementById('noteEditor').focus();
+  document.execCommand(cmd, false, null);
+  updateToolbarState();
+}
+
+function updateToolbarState() {
+  const cmds = ['bold','italic','underline','insertUnorderedList','insertOrderedList'];
+  cmds.forEach(cmd => {
+    const btn = document.querySelector(`.note-toolbar-btn[onclick="noteFormat('${cmd}')"]`);
+    if (btn) btn.classList.toggle('active', document.queryCommandState(cmd));
+  });
+}
+
 function openComment(itemId, label, e) {
   e.stopPropagation();
   _activeCommentId = itemId;
   const overlay = document.getElementById('noteModalOverlay');
-  const ta = document.getElementById('commentText');
+  const editor = document.getElementById('noteEditor');
   const itemEl = document.getElementById('noteModalItem');
-  ta.value = getItem(itemId).comment || '';
+  // Load saved HTML content
+  const saved = getItem(itemId).comment || '';
+  editor.innerHTML = saved;
   if (itemEl) itemEl.textContent = label || itemId;
   overlay.classList.add('visible');
-  setTimeout(() => ta.focus(), 50);
+  setTimeout(() => { editor.focus(); updateToolbarState(); }, 50);
 }
+
 function closeComment() {
   document.getElementById('noteModalOverlay').classList.remove('visible');
   _activeCommentId = null;
 }
+
 function saveComment() {
   if (!_activeCommentId) return;
-  const val = document.getElementById('commentText').value.trim();
-  setItem(_activeCommentId, 'comment', val);
+  const editor = document.getElementById('noteEditor');
+  const val = editor.innerHTML.trim();
+  // Store as HTML, but use text content to check if empty
+  const isEmpty = editor.innerText.trim() === '';
+  setItem(_activeCommentId, 'comment', isEmpty ? '' : val);
   const btn = document.getElementById('cb-' + _activeCommentId);
   if (btn) {
-    btn.textContent = val ? '💬 Note ●' : '💬 Note';
-    btn.className = 'comment-btn' + (val ? ' has-comment' : '');
+    btn.textContent = !isEmpty ? '💬 Note ●' : '💬 Note';
+    btn.className = 'comment-btn' + (!isEmpty ? ' has-comment' : '');
   }
   closeComment();
   showToast();
 }
+
 // Close on overlay click
 document.addEventListener('click', (e) => {
   const overlay = document.getElementById('noteModalOverlay');
@@ -954,6 +1006,12 @@ document.addEventListener('click', (e) => {
   }
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeComment(); });
+// Update toolbar active state on selection change
+document.addEventListener('selectionchange', () => {
+  if (document.getElementById('noteModalOverlay').classList.contains('visible')) {
+    updateToolbarState();
+  }
+});
 
 // ══════════════════════════════════════════════
 //  NAV & SECTIONS
