@@ -2083,6 +2083,16 @@ function buildRangeMap() {
       [5,5,'p2-q005'],[6,6,'p2-q006'],[7,7,'p2-q007'],[8,8,'p2-q008'],[9,9,'p2-q009'],
       [10,10,'p2-q010'],[11,11,'p2-q011'],[12,12,'p2-q012'],[13,13,'p2-q013'],[14,14,'p2-q014'],
       [15,15,'p2-q015'],[16,16,'p2-q016'],[17,17,'p2-q017'],[18,18,'p2-q018'],[19,19,'p2-q019']] },
+    // IT Architecture Section A (On-Prem) A1-A45 -> p3-aXX
+    { prefix:'A', ranges:[[1,1,'p3-a01'],[2,5,'p3-a02'],[6,7,'p3-a03'],[8,9,'p3-a04'],
+      [10,14,'p3-a05'],[15,18,'p3-a06'],[19,23,'p3-a07'],[24,27,'p3-a08'],[28,34,'p3-a09'],
+      [35,40,'p3-a10'],[41,43,'p3-a11'],[44,45,'p3-a12']] },
+    // IT Architecture Section B (SaaS) B1-B58 -> p3-bXX
+    { prefix:'B', ranges:[[1,4,'p3-b01'],[5,5,'p3-b02'],[6,9,'p3-b03'],[21,24,'p3-b04'],
+      [34,34,'p3-b05'],[35,35,'p3-b06'],[29,29,'p3-b07'],[41,41,'p3-b07']] },
+    // IT Architecture Section C (General) C1-C49 -> p3-cXX
+    { prefix:'C', ranges:[[1,8,'p3-c01'],[12,19,'p3-c02'],[20,20,'p3-c03'],[21,22,'p3-c04'],
+      [23,26,'p3-c05'],[27,35,'p3-c06'],[37,41,'p3-c07'],[44,46,'p3-c08'],[47,49,'p3-c09']] },
   ];
   rangePatterns.forEach(({ prefix, ranges }) => {
     ranges.forEach(([from, to, itemId]) => {
@@ -2109,7 +2119,7 @@ function matchItem(csvLabel, csvDesc, index) {
 
   // 1. Extract ID prefix+number from label (CP1, SR42, CS73, Q001, REQ 5 etc.)
   const combined = (csvLabel || '') + ' ' + (csvDesc || '');
-    const idMatch = combined.match(/(CP|CS|SR|Q|REQ)\s*(\d+)/i);
+    const idMatch = combined.match(/(CP|CS|SR|Q|REQ|[ABC])\s*(\d+)/i);
   if (idMatch) {
     const key = idMatch[1].toUpperCase() + idMatch[2];
     const keyPad2 = idMatch[1].toUpperCase() + String(parseInt(idMatch[2])).padStart(2,'0');
