@@ -199,6 +199,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .flag-item-status{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
 .flag-item-note{font-size:11px;color:var(--subtle);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
 
+/* PHASE TIMESTAMPS */
+.phase-last-edit{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;white-space:nowrap;margin-left:6px;}
+.phase-last-edit.recent{color:#86efac;border-color:var(--green-border);background:var(--green-dim);}
+.phase-last-edit.today{color:#93c5fd;border-color:var(--blue-border);background:var(--blue-dim);}
+
 /* COPY LINK ICON */
 .copy-link-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 5px;border-radius:4px;font-size:13px;line-height:1;transition:all .15s;opacity:0.5;}
 .copy-link-btn:hover{color:var(--accent2);opacity:1;background:var(--blue-dim);}
@@ -380,6 +385,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="section" id="phase1">
   <div class="section-title">Phase 1 — Administrative & Legal</div>
   <div class="section-sub">Do this first. These are gate items — the RFP cannot proceed without them.</div>
+  <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:-12px;">Last edited: <span id="pts-p1" class="phase-last-edit">—</span></div>
   <div class="info-box">The draft response (19.03.26) shows NDA and Reputational Risk Questionnaire as attached. <strong>Confirm these are final signed versions</strong>, not placeholders.</div>
   <div id="tasks-p1"></div>
 </div>
@@ -388,6 +394,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="section" id="phase2">
   <div class="section-title">Phase 2 — Business & Functional Requirements</div>
   <div class="section-sub">Business Questionnaire (19 items) + detailed functional areas. Product team should lead. Response options: Fully Supported / Parametrisation Required / Development Required / Within SaaS Roadmap / Not Supported.</div>
+  <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:-12px;">Last edited: <span id="pts-p2" class="phase-last-edit">—</span></div>
   <div id="tasks-p2"></div>
 </div>
 
@@ -395,6 +402,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="section" id="phase3">
   <div class="section-title">Phase 3 — IT Architecture & Technical Requirements</div>
   <div class="section-sub">Sections A (On-Prem), B (SaaS), and C (General). Assign a lead IT architect. Several items are mandatory — see notes.</div>
+  <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:-12px;">Last edited: <span id="pts-p3" class="phase-last-edit">—</span></div>
   <div id="tasks-p3"></div>
 </div>
 
@@ -402,6 +410,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="section" id="phase4">
   <div class="section-title">Phase 4 — Cybersecurity Requirements</div>
   <div class="section-sub">Source: CyberSecurity_Requirements_and_Questionnaire.xlsx. Four sub-sections: Security Requirements (59), SR Questionnaire OnPrem (42), SR Questionnaire Cloud (42), Cloud Service (73), Cloud Provider (123). Assign CISO / security architect. Response options: Full Support / Partial Support / Could be implemented / Not Supported / N/A.</div>
+  <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:-12px;">Last edited: <span id="pts-p4" class="phase-last-edit">—</span></div>
   <div class="info-box amber"><strong>🛡️ Response options for the questionnaire sheets</strong> are: <strong>Full Support • Partial Support • Could be implemented • Not Supported • N/A</strong> — pick the one that matches your platform's capability per question.</div>
   <div id="tasks-p4"></div>
 </div>
@@ -410,6 +419,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <div class="section" id="phase5">
   <div class="section-title">Phase 5 — Financial Offer</div>
   <div class="section-sub">All amounts in EUR (€) only. Complete the financial table with pricing, Year 1–5 breakdown, Capex/Opex classification, and offer validity consent per line.</div>
+  <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:-12px;">Last edited: <span id="pts-p5" class="phase-last-edit">—</span></div>
   <div class="info-box red"><strong>⚠️ Every line item requires "Yes" consent</strong> confirming the offer is valid through 31/12/2023. Ensure no line is left unconsented.</div>
   <div id="tasks-p5"></div>
 </div>
@@ -925,6 +935,8 @@ function setItem(id, key, val) {
   if (!STATE[id]) STATE[id] = {status:'', comment:'', response:''};
   STATE[id][key] = val;
   saveLocalState(STATE);
+  // Update phase timestamp
+  touchPhaseTimestamp(id);
   // Sync to Firestore
   if (_firebaseReady && db) {
     db.collection('rfp_tracker').doc(id).set(STATE[id], { merge: true })
@@ -978,6 +990,7 @@ function syncFromFirestore() {
         } catch(e) {}
       }
     }).catch(() => {});
+    syncTimestamps();
     showSyncBadge('ok');
   }).catch(err => {
     console.warn('Firestore read failed:', err);
@@ -1609,7 +1622,7 @@ function buildPMPhaseTable() {
     const barColor = meta.color === 'blue' ? 'var(--accent)' : 'var(--' + meta.color + ')';
     const tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid var(--border)';
-    tr.innerHTML = '<td style="padding:8px 10px;font-size:12px;color:var(--text);">' + meta.icon + ' ' + meta.label + '</td>' +
+    tr.innerHTML = '<td style="padding:8px 10px;font-size:12px;color:var(--text);">' + meta.icon + ' ' + meta.label + '<br><span id="pts-' + key + '" class="phase-last-edit" style="margin-left:0;">—</span></td>' +
       '<td style="padding:8px 10px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">' + total + '</td>' +
       '<td style="padding:8px 10px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#86efac;">' + done + '</td>' +
       '<td style="padding:8px 10px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:' + (blocked>0?'#fca5a5':'var(--muted)') + ';">' + blocked + '</td>' +
@@ -1635,6 +1648,7 @@ function buildPMPhaseTable() {
   }
   if (pctBig) pctBig.textContent = overallPct + '%';
   if (itemsDone) itemsDone.textContent = totalDone + ' / ' + totalAll + ' items';
+  renderAllTimestamps();
 }
 
 function buildPMOwners() {
@@ -1797,6 +1811,7 @@ function buildPMPhaseTable() {
   }
   if (pctBig) pctBig.textContent = overallPct + '%';
   if (itemsDone) itemsDone.textContent = totalDone + ' / ' + totalAll + ' items';
+  renderAllTimestamps();
 }
 
 function buildPMOwners() {
@@ -2264,10 +2279,89 @@ function clearImport() {
 }
 
 // ------------------------------------------------------------
+//  PHASE TIMESTAMPS
+// ------------------------------------------------------------
+function loadTimestamps() {
+  try { return JSON.parse(localStorage.getItem('rfp_timestamps_v1') || '{}'); } catch(e) { return {}; }
+}
+function saveTimestamps(ts) {
+  localStorage.setItem('rfp_timestamps_v1', JSON.stringify(ts));
+  if (_firebaseReady && db) {
+    db.collection('rfp_meta').doc('timestamps').set(ts).catch(() => {});
+  }
+}
+
+function touchPhaseTimestamp(itemId) {
+  // Determine which phase this item belongs to
+  let phaseKey = null;
+  for (const [key, ph] of Object.entries(PHASES)) {
+    for (const grp of ph.groups) {
+      if (grp.items.find(it => it.id === itemId)) { phaseKey = key; break; }
+    }
+    if (phaseKey) break;
+  }
+  if (!phaseKey) return;
+  const ts = loadTimestamps();
+  ts[phaseKey] = new Date().toISOString();
+  saveTimestamps(ts);
+  renderPhaseTimestamp(phaseKey, ts[phaseKey]);
+}
+
+function renderPhaseTimestamp(phaseKey, isoString) {
+  const el = document.getElementById('pts-' + phaseKey);
+  if (!el || !isoString) return;
+  const d = new Date(isoString);
+  const now = new Date();
+  const diffMs = now - d;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHrs = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  let label, cls;
+  if (diffMins < 2) {
+    label = 'just now'; cls = 'recent';
+  } else if (diffMins < 60) {
+    label = diffMins + 'm ago'; cls = 'recent';
+  } else if (diffHrs < 24) {
+    label = diffHrs + 'h ago'; cls = 'today';
+  } else if (diffDays === 1) {
+    label = 'yesterday'; cls = '';
+  } else if (diffDays < 7) {
+    label = diffDays + 'd ago'; cls = '';
+  } else {
+    label = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }); cls = '';
+  }
+
+  el.textContent = 'edited ' + label;
+  el.className = 'phase-last-edit' + (cls ? ' ' + cls : '');
+  el.title = 'Last change: ' + d.toLocaleString('en-GB');
+}
+
+function renderAllTimestamps() {
+  const ts = loadTimestamps();
+  Object.keys(PHASES).forEach(key => {
+    if (ts[key]) renderPhaseTimestamp(key, ts[key]);
+  });
+}
+
+// Sync timestamps from Firestore
+function syncTimestamps() {
+  if (!_firebaseReady || !db) return;
+  db.collection('rfp_meta').doc('timestamps').get().then(doc => {
+    if (doc.exists) {
+      const ts = doc.data();
+      localStorage.setItem('rfp_timestamps_v1', JSON.stringify(ts));
+      renderAllTimestamps();
+    }
+  }).catch(() => {});
+}
+
+// ------------------------------------------------------------
 //  INIT
 // ------------------------------------------------------------
 ['p1','p2','p3','p4','p5'].forEach(buildPhase);
 updateProgress();
+renderAllTimestamps();
 
 // Handle direct link via URL hash (e.g. #p1-01)
 if (window.location.hash) {
