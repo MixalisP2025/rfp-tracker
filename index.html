@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alpha Bank RFP — Response Tracker v2</title>
+<title>Alpha Bank RFP — Response Tracker v3</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
 :root {
@@ -361,7 +361,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   • <strong>30 April 2026</strong> — Bank provides responses to the questions<br>
   • <strong>12 May 2026, 3:00 PM</strong> — Submission of the RFP responses
 </div>
-  <div class="info-box amber"><strong>🛡️ New: Cybersecurity section added.</strong> The CyberSecurity file contains 59 mandatory security requirements, 42 SR questions (On-Prem questionnaire), 42 SR questions (Cloud questionnaire), 73 Cloud Service questions (CS1–CS73), and 123 Cloud Provider questions (CP1–CP123). This is the largest single section. Assign your CISO / security architect immediately.</div>
+  <div class="info-box amber"><strong>🛡️ Cybersecurity tracked at row-level.</strong> 42 SR items (Security Reqs sheet), 73 CS items (Cloud Service), 123 CP items (Cloud Provider) — plus 30 rollup entries for the 59 Mandatory Cyber Requirements (separate file). Import pulls vendor comments directly from the spreadsheet columns.</div>
   <div class="info-box green"><strong>💡 How to use this tracker:</strong> Set a status on each item using the dropdown. Click "📝 Note" to add a comment or internal note to any item. Your progress and all comments are saved automatically in this browser. Use the filter buttons inside each phase to focus on outstanding or blocked items.</div>
 
   <div class="phase-card open">
@@ -395,7 +395,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <!-- PHASE 2 -->
 <div class="section" id="phase2">
   <div class="section-title">Phase 2 — Business & Functional Requirements</div>
-  <div class="section-sub">Business Questionnaire (19 items) + detailed functional areas. Product team should lead. Response options: Fully Supported / Parametrisation Required / Development Required / Within SaaS Roadmap / Not Supported.</div>
+  <div class="section-sub">Every row from the Business Reqs sheet (65 items) tracked individually. Vendor comments import from column H. Response options: Fully Supported / Parametrisation Required / Development Required / Within SaaS Roadmap / Not Supported.</div>
   <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:-12px;">Last edited: <span id="pts-p2" class="phase-last-edit">—</span></div>
   <div id="tasks-p2"></div>
 </div>
@@ -403,7 +403,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <!-- PHASE 3 -->
 <div class="section" id="phase3">
   <div class="section-title">Phase 3 — IT Architecture & Technical Requirements</div>
-  <div class="section-sub">Sections A (On-Prem), B (SaaS), and C (General). Assign a lead IT architect. Several items are mandatory — see notes.</div>
+  <div class="section-sub">Sections A (On-Prem, 45), B (SaaS, 58), and C (General, 49) — every question from the IT - Architecture sheet is tracked individually. Vendor comments import from column I. Mandatory items flagged.</div>
   <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:-12px;">Last edited: <span id="pts-p3" class="phase-last-edit">—</span></div>
   <div id="tasks-p3"></div>
 </div>
@@ -411,7 +411,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <!-- PHASE 4 — CYBER -->
 <div class="section" id="phase4">
   <div class="section-title">Phase 4 — Cybersecurity Requirements</div>
-  <div class="section-sub">Source: CyberSecurity_Requirements_and_Questionnaire.xlsx. Four sub-sections: Security Requirements (59), SR Questionnaire OnPrem (42), SR Questionnaire Cloud (42), Cloud Service (73), Cloud Provider (123). Assign CISO / security architect. Response options: Full Support / Partial Support / Could be implemented / Not Supported / N/A.</div>
+  <div class="section-sub">SR Questionnaire (42 items, comments col I), Cloud Service (73 items, comments col E), Cloud Provider (123 items, comments col E). Plus the 59 Mandatory Cyber Requirements (from separate file). Assign CISO / security architect.</div>
   <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:-12px;">Last edited: <span id="pts-p4" class="phase-last-edit">—</span></div>
   <div class="info-box amber"><strong>🛡️ Response options for the questionnaire sheets</strong> are: <strong>Full Support • Partial Support • Could be implemented • Not Supported • N/A</strong> — pick the one that matches your platform's capability per question.</div>
   <div id="tasks-p4"></div>
@@ -542,7 +542,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   <div class="section-sub">Import your Excel (.xlsx) or CSV file directly — no need to export first. Just download from OneDrive and import.</div>
 
   <div class="info-box green">
-    <strong>How to export from Excel:</strong> Open your spreadsheet → File → Save As → CSV (Comma delimited). The CSV needs at minimum an <strong>Item</strong> column (matching the item labels) and a <strong>Status</strong> column. A <strong>Note</strong> column is optional.
+    <strong>Excel import is sheet-aware.</strong> Upload the same <em>IT_Requirements_and_Questionnaire.xlsx</em> directly — no export needed. The importer reads vendor comments from the column you already use in each sheet: <strong>Business Reqs</strong> (H), <strong>IT - Architecture</strong> (I), <strong>Security Reqs</strong> (I), <strong>Cloud Provider</strong> (E), <strong>Cloud Service</strong> (E), <strong>Vendor</strong> (B). Legacy CSV uploads still work via header-based matching.
   </div>
 
   <div class="info-box">
@@ -659,149 +659,273 @@ const PHASES = {
         {id:'p1-04', label:'Confirm submission contact', desc:'Contact person: Stathis Alafris (Partner). Send to: georgios.mouroutsos@alpha.gr. Confirm this is still the correct point of contact.', hint:'Confirmed in draft response'},
         {id:'p1-05', label:'Change response status from DRAFT to FINAL', desc:'Portal currently shows response status as "Draft". Ensure it is submitted/finalised before 12.05.26 15:00.', hint:'Portal action required'},
       ]
-    }]
+    },
+      {id:'g-vendor', title:'Vendor & Company Profile (32 items, Vendor sheet)', num:'1.2', sheet:'Vendor', items:[
+        {id:'p1-vn-001',label:'1.       Official name, VAT number, company details, address, telephone numbers, e-mail…',desc:'1.       Official name, VAT number, company details, address, telephone numbers, e-mail. The vendor shall also indicate what type of entity it is (for example, a corporation or a partnership).',row:4,aa:'1.'},
+        {id:'p1-vn-002',label:'2.       The total number of years in business and, if applicable, the number of years …',desc:'2.       The total number of years in business and, if applicable, the number of years under the present business name.',row:5,aa:'2.'},
+        {id:'p1-vn-003',label:'3.       A statement giving a brief history of the Supplier’s company, how it is organi…',desc:'3.       A statement giving a brief history of the Supplier’s company, how it is organized and how its available products and resources will be used to meet Alpha Bank\'s requirements.',row:6,aa:'3.'},
+        {id:'p1-vn-004',label:'4.       A description of the vendor\'s operations: facilities, business and objectives,…',desc:'4.       A description of the vendor\'s operations: facilities, business and objectives, and the total number of employees and presence both internationally and in Greece.',row:7,aa:'4.'},
+        {id:'p1-vn-005',label:'5.       The organizational structure, size and location of facilities.',row:8,aa:'5.'},
+        {id:'p1-vn-006',label:'6.       The proposed support structure specifically for the Greek market. Local presen…',desc:'6.       The proposed support structure specifically for the Greek market. Local presence in Greece is deemed mandatory, either directly, or through a partnership with a local company.',row:9,aa:'6.'},
+        {id:'p1-vn-007',label:'7.       In case the Suppliers uses subcontractors, relevant information for them, as w…',desc:'7.       In case the Suppliers uses subcontractors, relevant information for them, as well as detailed description of their involvement.',row:10,aa:'7.'},
+        {id:'p1-vn-008',label:'9.       Solemn Declaration of Article 8 of Law 1599/86 stating that the Supplier has n…',desc:'9.       Solemn Declaration of Article 8 of Law 1599/86 stating that the Supplier has not been declared forfeited by contests of a Public or Private Law Entity.',row:11,aa:'9.'},
+        {id:'p1-vn-009',label:'10.       Social Security and Tax clearance',row:12,aa:'10.'},
+        {id:'p1-vn-010',label:'11.       Declaration of Vendor’s ability to provide the services requested by the Invi…',desc:'11.       Declaration of Vendor’s ability to provide the services requested by the Invitation, highlighting any specialization in the technical, operational and procedural fields.',row:13,aa:'11.'},
+        {id:'p1-vn-011',label:'12.       Experience in the banking / financial market or other market with correspondi…',desc:'12.       Experience in the banking / financial market or other market with corresponding requirements Availability of experienced staff to provide the services of the Invitation',row:14,aa:'12.'},
+        {id:'p1-vn-012',label:'13.       Description of the Supplier\'s general infrastructure (organization of headqua…',desc:'13.       Description of the Supplier\'s general infrastructure (organization of headquarters, existence of branches in the province and their infrastructure, network of partners and subcontractors in the Greek territory)',row:15,aa:'13.'},
+        {id:'p1-vn-013',label:'14.       Authorizations by manufacturers to provide support services for their softwar…',desc:'14.       Authorizations by manufacturers to provide support services for their software, and whether the services offered to the Bank under the offer are officially warranted or supported by the manufacturer',row:16,aa:'14.'},
+        {id:'p1-vn-014',label:'15.       Quality / Security Certificates (ISO)',row:17,aa:'15.'},
+        {id:'p1-vn-015',label:'15.1 ISO 45001 or equivalent',row:18,aa:'15.'},
+        {id:'p1-vn-016',label:'16. Declaration that in case Vendor’s offer is selected, they will provide Alpha Bank w…',desc:'16. Declaration that in case Vendor’s offer is selected, they will provide Alpha Bank with the company’s legal documents, in the Greek or English language, issued after the Proposal’s submission date and officially stamped by the appropriate authority',row:19,aa:'16.'},
+        {id:'p1-vn-017',label:'17. Submission of Legal documents (as requested in Appendix II of the RFP document)\n• T…',desc:'17. Submission of Legal documents (as requested in Appendix II of the RFP document)\n• The current certified Articles of Association of the company.\n• Decision of the General Meeting of the Shareholders for the election of the current members of the Board of Directors.\n• Decision of the BoD for its formation into a Body.\n• Certificate of the competent authority of the country of the company’s registered office, for the company’s lawful establishment and operation.\n• Certificate that there is no decision pronouncing the bankruptcy, dissolution or liquidation of the company.\n• The current approved balance sheet of the company.\n• Certificate of a well-known bank for the solvency of the company.\n• Recent extract from the Register of Companies in which shall be stated a) the company’s registered office, b) a brief of the articles of association and any amendments and c) the Directors of the company.\n• Recent minutes of the board of Directors concerning the authority of the company’s legal representatives to sign contracts.',row:20,aa:'17.'},
+        {id:'p1-vn-018',label:'1. Company Overview and Clientele',row:22,aa:'1.'},
+        {id:'p1-vn-019',label:'2. Administrative team, organization, size and location of premises',row:23,aa:'2.'},
+        {id:'p1-vn-020',label:'3. Contact person - project (full name, title, address - if different from above – cont…',desc:'3. Contact person - project (full name, title, address - if different from above – contact phone number, e-mail, fax).',row:24,aa:'3.'},
+        {id:'p1-vn-021',label:'4. Reference to similar Projects and experience in the banking / financial or other mar…',desc:'4. Reference to similar Projects and experience in the banking / financial or other markets through corresponding services. Presentation of use cases is also desirable.',row:25,aa:'4.'},
+        {id:'p1-vn-022',label:'5. Use of Subcontractors. If any services are subcontracted to a third party, please in…',desc:'5. Use of Subcontractors. If any services are subcontracted to a third party, please indicate this clearly in your proposal and specify their exposure, reliance upon to their services. Please explicitly mention relevant information, dependent to independent service provider(-s) that are owned by or is under common control with the Solution provider.',row:26,aa:'5.'},
+        {id:'p1-vn-023',label:'6. Active Conflict of Interest policy Yes/no with attachment',row:27,aa:'6.'},
+        {id:'p1-vn-024',label:'7. Active GDPR Policy/Processes/organization chart Yes/no with attachment',row:28,aa:'7.'},
+        {id:'p1-vn-025',label:'8. Active Business Continuity Plan and Disaster Recovery Plan Yes/no with attachment',row:29,aa:'8.'},
+        {id:'p1-vn-026',label:'1. submission of Financial statements',row:31,aa:'1.'},
+        {id:'p1-vn-027',label:'- Fiscal Year ending in 2022',row:32,aa:'27'},
+        {id:'p1-vn-028',label:'- Fiscal Year ending in 2023',row:33,aa:'28'},
+        {id:'p1-vn-029',label:'- Fiscal Year ending in 2024',row:34,aa:'29'},
+        {id:'p1-vn-030',label:'2. net revenue of the last three (3) fiscal years.',row:35,aa:'2.'},
+        {id:'p1-vn-031',label:'3. percentage of revenue change during the last three (3) years.',row:36,aa:'3.'},
+        {id:'p1-vn-032',label:'4. revenue with Bank, in absolute numbers (net revenue) and percentage (%) duringthe la…',desc:'4. revenue with Bank, in absolute numbers (net revenue) and percentage (%) duringthe last 3 years',row:37,aa:'4.'},
+      ]}
+    ]
   },
   p2: {
     label:'Phase 2', color:'amber',
     groups:[
-      {id:'g-bq-a', title:'Business Reqs_A \u2014 Detailed Requirements', num:'2A', items:[
-        {id:'p2a-01', label:'Investment Products', desc:'Equities, Mutual Funds, Bonds, Structure Products, Derivatives, Over The Counter (OTC) Derivatives (includes IRS & FWD), Energy Contracts, Certificates, AIFS etc.'},
-        {id:'p2a-02', label:'Banking Products', desc:'* Deposit\n* FX Products\n* Payments\n* Money transfers'},
-        {id:'p2a-03', label:'Product Data Base & Maintenance', desc:'Interface with Data Provider:\n* Instrument Creation\n* Instrument Static Data synchronization\n* Prices & FX Rates update'},
-        {id:'p2a-04', label:'Client Categories', desc:'* Institutional\n* Individual\n* Legal Entity\n* Ad hoc portfolio grouping'},
-        {id:'p2a-05', label:'Investment Accounts', desc:'* Segregated\n* Omnibus'},
-        {id:'p2a-06', label:'Client Onboarding \u2014 Beneficiary Information', desc:'Beneficiary Information'},
-        {id:'p2a-07', label:'Client Onboarding \u2014 Questionnaires', desc:'Questionnaires, ability to create them from UI not hard coded\n* Investment Profile\n* Knowledge & Experience'},
-        {id:'p2a-08', label:'Client Onboarding \u2014 Institutional clients', desc:'Capability to link institutional clients with multiple asset managers'},
-        {id:'p2a-09', label:'Client Onboarding \u2014 Bank Account creation', desc:'Bank Account creation (Interface with Core Banking System)'},
-        {id:'p2a-10', label:'Client Onboarding \u2014 Suitability Assessment', desc:'Suitability Assessment'},
-        {id:'p2a-11', label:'Portfolio Setup \u2014 Beneficiary labeling', desc:'Labeling of beneficiary according to whom K&E investment appropriateness will be performed'},
-        {id:'p2a-12', label:'Fees Administration \u2014 Configurable Pricing Policies', desc:'Apply Configurable Pricing Policies per product and per portfolio: at minimum Custody, transaction, management, performance & MF kick back fees, on top commission and discounts/exceptions'},
-        {id:'p2a-13', label:'Connectivity \u2014 Protocols with Clients, Custodians & Depositories', desc:'Connectivity Protocols with Clients, Custodians & Depositories (straight-through processing, STP)\n* FIX\n* APIs\n* Custom APIs\n* SAT API (Athex)\n* Swift messages (support manual repair)\n* ISO\n* Email\n* File\n* Offline modes'},
-        {id:'p2a-14', label:'Connectivity \u2014 Interface with Core Banking System', desc:'Interface with Core Banking System and other core systems (Realtime if applicable):\n* Client Static Data\n* Bank Accounts\n* Transactions /Positions\n* Fixed Term Deposits (Initiation - Maturities - Accruals) Transactions\n* Deposits - Withdrawals'},
-        {id:'p2a-15', label:'Trade Order Management \u2014 Import and manage transaction files', desc:'Import and manage transaction files'},
-        {id:'p2a-16', label:'Trade Order Management \u2014 Order Creation & Reception', desc:'Order Creation & Reception'},
-        {id:'p2a-17', label:'Trade Order Management \u2014 Bulk orders', desc:'Bulk orders'},
-        {id:'p2a-18', label:'Trade Order Management \u2014 Pre-matching files', desc:'Pre-matching files'},
-        {id:'p2a-19', label:'Trade Order Management \u2014 Pending Orders Management', desc:'Pending Orders Management'},
-        {id:'p2a-20', label:'Trade Order Management \u2014 Partial Settlement', desc:'Partial Settlement'},
-        {id:'p2a-21', label:'Trade Order Management \u2014 Receive Trade Confirmations/Fills from Brokers', desc:'Receive Trade Confirmations/Fills from Brokers'},
-        {id:'p2a-22', label:'Trade Order Management \u2014 Unbulk orders and allocate to client portfolios', desc:'Unbulk orders and allocate to client portfolios'},
-        {id:'p2a-23', label:'Trade Order Management \u2014 Buying Power / checking and pledging', desc:'Buying Power/ checking and pledging (cash and/or securities - Configurable rules per service type)'},
-        {id:'p2a-24', label:'Trade Order Management \u2014 Interfaces with Custodians and Depositories', desc:'Interfaces with Custodians and Depositories (e.g. Euroclear)'},
-        {id:'p2a-25', label:'Clearing Services \u2014 Transfer on behalf of clients', desc:'Clearing Services, with capability of transfer on behalf of clients on omnibus and segregated accounts in local and international markets'},
-        {id:'p2a-26', label:'Clearing Services \u2014 General Clearing Member Activities', desc:'General Clearing Member Activities:\n* Calculate and Monitor Risk & Margins\n* Generation of trade slips (calculation and posting of fees and taxes)\n* Transmission of transactions to third party counterparties'},
-        {id:'p2a-27', label:'Clearing Services \u2014 GR Market / Euronext', desc:'GR Market / Euronext\n* Define configurable cut off times\n* Broker Trades Reception\n* Receive Exchange or CSD Trades\n* Send Allegements in case of disagreement\n* Settle transaction automatically based on configurable logic'},
-        {id:'p2a-28', label:'Clearing Services \u2014 Forward Settlement Instructions to Sub Custodians', desc:'Forward Settlement Instructions to Sub Custodians (SWIFT - Custom - Offline modes)'},
-        {id:'p2a-29', label:'Clearing Services \u2014 Claims and CSDR Penalties Calculation', desc:'Claims and CSDR Penalties Calculation'},
-        {id:'p2a-30', label:'Settlement Services \u2014 Cash / Securities', desc:'* Cash (Debit/Credit bank accounts - Connectivity with Core Banking System)\n* Securities (connectivity with core systems for execution of orders)'},
-        {id:'p2a-31', label:'Collateral Management \u2014 Collateralization Policies Management', desc:'Collateralization Policies Management:\n* Pledge hierarchy\n* Investment Concentration (percentage)\n* Haircuts (percentage)\n* LTV (percentage), Alerts (percentage) & Margin Calls'},
-        {id:'p2a-32', label:'Collateral Management \u2014 Automatic Pledging/Un-pledging', desc:'Automatic Pledging/Un-pledging of assets based on portfolio valuation and Collateralization Policies'},
-        {id:'p2a-33', label:'Accounting \u2014 Automated General Ledger Accounting', desc:'Automated General Ledger Accounting'},
-        {id:'p2a-34', label:'Custody \u2014 Securities pledging/unpledging', desc:'Securities pledging/unpledging - on product or portfolio level'},
-        {id:'p2a-35', label:'Custody \u2014 Omnibus account management', desc:'Omnibus account management'},
-        {id:'p2a-36', label:'Custody \u2014 Foreign Markets / settlement acknowledgement', desc:'Foreign Markets:\n* Receive Sub Custodian settlement acknowledgement or Error alerts\n* Forward Messages to client'},
-        {id:'p2a-37', label:'Custody \u2014 Foreign Markets / settlement confirmation', desc:'Foreign Markets:\n* Receive Settlement Confirmation from Sub Custodian\n* Forward Messages to Clients'},
-        {id:'p2a-38', label:'Custody \u2014 Foreign Markets / configurable cut off times', desc:'Foreign Markets:\n* Define configurable cut off times per sub custodian, asset type etc'},
-        {id:'p2a-39', label:'Fund Custody \u2014 NAV / subscriptions / financial statements / regulations', desc:'* Control of Net Asset Value (NAV) Calculation and Units in Circulation\n* Control of Fund Redemptions / Subscriptions\n* Control of Fund Financial Statements\n* Control and Actions for the Issuance / Amendment of Regulations\n* Control and Actions for the Dissolution / Merger of Funds\n* Provision of Information on Clients\' Asset Data\n* Provision of Information on FMI Data\n* Control of Investment Limits of UCITS Funds'},
-        {id:'p2a-40', label:'Corporate Actions \u2014 Automated Corporate Action management', desc:'Automated Corporate Action management:\n* Client instruction reception & management\n* Connectivity with Custodian / Depository (eg. files)\n* Import /export of files\n* Client Notifications\n* Processing and completion, including cash and/or position updates\n* Claims and exception processing, including support for market claims, cash-in-lieu calculation and reconciliation\n* all types of corporate actions\n* support swift messages (import/export/processing)'},
-        {id:'p2a-41', label:'Portfolio Keeping \u2014 Real time position / corporate actions / collateral', desc:'* Real time position (Total, Settled, Unsettled, Pending Trades, Pledged)\n* Corporate Actions\n* Collateral Management\n* Configurable Pricing Policies\n* Running cash account statement'},
-        {id:'p2a-42', label:'End Of Day Procedures \u2014 Cash Position reconciliation with CBS', desc:'Cash Position reconciliation with Core Banking System'},
-        {id:'p2a-43', label:'End Of Day Procedures \u2014 Securities Positions Reconciliation', desc:'Securities Positions Reconciliation with:\n* Custodians\n* Sub-custodians\n* Depositories\n* Product Systems'},
-        {id:'p2a-44', label:'End Of Day Procedures \u2014 Automated reconciliation of orders, trades, positions', desc:'Automated reconciliation of orders, trades, positions with different parties-clients, per counterparty/custodian, depositories'},
-        {id:'p2a-45', label:'End Of Day Procedures \u2014 Custodian fees calculation', desc:'Custodian fees calculation'},
-        {id:'p2a-46', label:'Tax management', desc:'* Regulatory Compliance & Updates\n* Automated Tax Calculation\n* Dividend/Interest Tax\n* Integration with Tax Reporting\n* Asset Type Classification\n* Beneficiary Personalization (eg. Residency)'},
-        {id:'p2a-47', label:'Compliance \u2014 Pre and post trade Compliance Rules', desc:'Apply pre and post trade Compliance Rules (AML, KYC etc.)'},
-        {id:'p2a-48', label:'Compliance \u2014 Audit Trail', desc:'Audit Trail'},
-        {id:'p2a-49', label:'Compliance \u2014 MiFID II, FATCA, SFTR, CSDR, SRD II, EMIR, UCITS/AIFMD', desc:'MiFID II, FATCA, SFTR, CSDR (monitoring penalty fees & claims), SRD II, EMIR, UCITS/AIFMD'},
-        {id:'p2a-50', label:'Compliance \u2014 Pre-trade check', desc:'Pre-trade check (Investment limit monitoring)'},
-        {id:'p2a-51', label:'Compliance \u2014 Internal Compliance Monitoring & Reviews', desc:'Internal Compliance Monitoring & Reviews'},
-        {id:'p2a-52', label:'Compliance \u2014 Produce periodic configurable reports', desc:'Produce periodic configurable reports'},
-        {id:'p2a-53', label:'Reporting \u2014 Configurable communication rules by functional category', desc:'Configurable communication rules by functional category (Client Reporting, Corporate Actions, Invoicing, Trade Confirmations, etc.)'},
-        {id:'p2a-54', label:'Reporting \u2014 Trade confirmations / settlement confirmations', desc:'* Produce trade confirmations\n* Automatic Dispatch Settlement Confirmations to clients (GR market)'},
-        {id:'p2a-55', label:'Reporting \u2014 Client Statement / TWR / IRR / attribution', desc:'Client Statement:\n* Performance Calculation (TWR & IRR)\n* Attribution Analysis\n* Contribution Analysis\n* Period Transactions'},
-        {id:'p2a-56', label:'Reporting \u2014 Configurable Client Statement', desc:'Configurable Client Statement:\n* per portfolio\n* per beneficiary\n* per Asset Manager\n* per client segment'},
-        {id:'p2a-57', label:'Reporting \u2014 Reports across multiple portfolios for same client', desc:'Produce reports across multiple portfolios for the same client (segregated or consolidated)'},
-        {id:'p2a-58', label:'Reporting \u2014 Tax certificates per product / per client', desc:'Tax certificates per product / per client'},
-        {id:'p2a-59', label:'Reporting \u2014 Income Certificates', desc:'Income Certificates'},
-        {id:'p2a-60', label:'Reporting \u2014 Cost & Charges Report', desc:'Cost & Charges Report (annual)'},
-        {id:'p2a-61', label:'Reporting \u2014 Depreciation Report', desc:'Depreciation Report'},
-        {id:'p2a-62', label:'Reporting \u2014 Ad hoc / Advanced reporting', desc:'Ad hoc / Advanced reporting'},
-        {id:'p2a-63', label:'Reporting \u2014 Regulatory reporting', desc:'Regulatory reporting'},
-        {id:'p2a-64', label:'Reporting \u2014 APA & ARM', desc:'APA & ARM'},
-        {id:'p2a-65', label:'Reporting \u2014 Charges & Accruals calculation', desc:'Charges & Accruals calculation and incorporation in portfolio position'},
-        {id:'p2a-66', label:'Invoicing \u2014 Automatic processing of recurring bulk fee payments', desc:'Automatic processing of recurring bulk fee payments'},
-        {id:'p2a-67', label:'Invoicing \u2014 Distribution of invoices and detailed invoice breakdowns', desc:'Distribution of invoices and detailed invoice breakdowns to clients'},
-        {id:'p2a-68', label:'Portfolio Management (Discretionary) \u2014 Model Portfolio Management', desc:'i.e. Model Portfolio Management (Strategies)\n* Define Strategic & Tactical Allocation targets\n* Add any additional compliance rules\n* Portfolio Rebalancing'},
-        {id:'p2a-69', label:'Portfolio Management (Advisory) \u2014 Investment Proposal Creation', desc:'i.e. Investment Proposal Creation\n* Comparison between current and model position\n* Generate rebalancing recommendation\n* Estimate accompanying projected transaction fees\n* Generate and dispatch proposal to client\n* Receive approval/ rejection by client\n* Generate orders'},
-        {id:'p2a-70', label:'AIFs / Cash Flow Monitoring', desc:'* Daily monitoring of all cash movements and detection of significant or non compliant transactions\n* Built in reconciliation engine to identify discrepancies\n* Ability to record explanations for material cash flow events and upload/store all relevant supporting documentation\n* Integration with Alpha Bank Cyprus banking system\n* Ability to upload bank statements from other banks the fund holds accounts with'},
-        {id:'p2a-71', label:'AIFs / Leverage & Loan Facility Monitoring', desc:'* Recording and management of loan agreements, leverage terms, and repayment structures\n* Automatic impact of leverage on NAV and investor reporting\n* Monitoring of leverage limits with alerts for breaches'},
-        {id:'p2a-72', label:'AIFs / Monitoring Investment Restrictions', desc:'Tools to detect deviations affecting compliance with AIFMD and fund specific rules, fully aligned with Cyprus law and regulator guidance/circulars'},
-        {id:'p2a-73', label:'AIFs / Onboarding & Fund Setup', desc:'* Onboarding for Funds and all related counterparties, including Directors, Signatories, Fund Managers, Fund Administrators, Legal Representatives, Investors (Unitholders), Redemptions, and Fund Compartments\n* Complete entity records and workflow driven onboarding aligned with Cyprus legislation and regulatory guidance'},
-        {id:'p2a-74', label:'AIFs / Oversight of NAV', desc:'* Independent monitoring of NAV per fund and per compartment\n* NAV calculation based on portfolio positions, cash balances, and pricing data\n* Integration with pricing sources for financial and alternative assets\n* Automated NAV reports (compartment level & consolidated)\n* Accurate unit pricing aligned with NAV\n* Alerts and exception reporting for discrepancies or breaches'},
-        {id:'p2a-75', label:'AIFs / Safekeeping of Assets', desc:'* Systematic safekeeping and monitoring of financial instruments and alternative assets (SPVs, real estate, vessels, etc.)\n* Certification and maintenance of all required documentation through automated workflows\n* Comprehensive reporting on SPVs, investment areas, portfolios, Unitholders, and any other required data\n* Automated alerts, exception reporting, and compliance verification to detect discrepancies, breaches, or changes over time'},
-        {id:'p2a-76', label:'Fund Administration', desc:'* NAV Calculation\n* Accounting\n* Fund Registry\n* Client Communication\n* Regulatory Reporting'},
-        {id:'p2a-77', label:'Transfer Agent Activities', desc:'Client orders, confirmations, positions & Corporate Actions'},
-        {id:'p2a-78', label:'Operational Efficiency & AI functionalities', desc:'KPIs & SLAs monitoring, automations'},
-        {id:'p2a-79', label:'Language', desc:'The solution must support at least two languages: Greek and English'},
-        {id:'p2a-80', label:'Deployment Model', desc:'* On-Premises\n* Cloud-based (secondary alternative)'},
-      ]},
-      {id:'g-bq-b', title:'Business Reqs_B \u2014 Questionnaire', num:'2B', items:[
-        {id:'p2b-01', label:'Client Coverage', desc:'Does the system allow segmentation of customers based on defined attributes (e.g. Mifid categories, fund managers, etc)?\nCan users create custom customer categories, hierarchies and classification reports?\nDoes the system support omnibus and segregated accounts?'},
-        {id:'p2b-02', label:'Asset Coverage', desc:'Does it support the entire range of investment products we offer, including cash flows, bank transaction activity, multi currency portfolios\nCan the system manage pledged or collateralized assets?'},
-        {id:'p2b-03', label:'Product Data Base & Maintenance', desc:'Does the system support product data base & product maintenance?\nDoes the system support multiple pricing sources?'},
-        {id:'p2b-04', label:'Transaction processing', desc:'Does the system support both Segregated and Omnibus accounts?\nIs settlement supported on both DVP and FOP basis?\nCan the system process instructions automatically?\nDoes it support settlement and matching reconciliation?\nDoes it support partial settlement?\nHow are failed or pending settlements handled?\nDoes the system support multiple settlement cycles?\nCan trades be imported automatically from trading systems?'},
-        {id:'p2b-05', label:'Cash flow and Transaction Management', desc:'Does the system support monitoring and management of cash flows?\nDoes it capture and process banking transactions?\nDoes it track balances across multiple accounts and currencies?\nCan it integrate with CBS?'},
-        {id:'p2b-06', label:'Compliance & Risk Management', desc:'Does the system support regulatory reporting requirements?(APA, ARM etc)\nDoes it maintain full audit trail of transactions and system activities?\nDoes it support monitoring of regulatory limits?\nCan compliance rules and restrictions be configured?'},
-        {id:'p2b-07', label:'Reconciliation processes', desc:'Does the system support reconciliation with custodians, brokers etc\nAre the reconciliation processes automated?\nHow are discrepancies identified and resolved?'},
-        {id:'p2b-08', label:'Clearing & Settlement', desc:'Does the system support automated procedures for Clearing & Settlement, including General Clearing Member Activities and failed trade management, Partial settlement, Claims & CSDR penalties, SRDII.'},
-        {id:'p2b-09', label:'Connectivity', desc:'Does it support integration with external systems (trading platforms, portfolio management systems, accounting system?\nAbility to connect with ATHEXclear\nAbility to send and receive Swift messages ISO15022 & ISO20022\nAbility to connect with other core systems\nAbility to import /export data by excel'},
-        {id:'p2b-10', label:'Reporting & Analytics', desc:'Does the system generate investor statements and confirmations?\nDoes the system offer configurable ad hoc reporting and analytics?\nCan the reports be exported to formats such as excel, PDF, CSV?\nDoes the system support automated report distribution?\nDoes the system support regulatory reporting?'},
-        {id:'p2b-11', label:'Transfer Agent', desc:'Does the system maintain complete investor records\nDoes the system support investor accounts hierarchies?\nCan the system manage joint accounts and multiple beneficiaries?\nDoes the system support bulk transaction processing?\nDoes it handle support transaction validation and exception handling?\nCan the system manage fund lifecycle events? (launch, closures, mergers etc)\nCan the system calculate NAV?\nDoes it handle bank holidays and cut off times?'},
-        {id:'p2b-12', label:'Corporate Actions', desc:'Does the system support the full lifecycle of corporate actions?\nCan the system automatically capture corporate actions announcements from market data providers, or Swift messages?\nWhich corporate actions are supported?\nHow does the system handle clients responses to corporate actions (e.g. tender offers)\nDoes the system support event notification and tracking?\nDoes the system support automated processing of mandatory corporate actions?\nCan system track deal lines and cut offs?\nCan clients submit elections electronically?\nCan tax reclaim processes be supported?'},
-        {id:'p2b-13', label:'Fees & Commissions', desc:'Does the system support automated calculation of fees and commissions?\nCan system calculate transaction based commissions?\nDoes the system support portfolio based fees?\nCan different fee structures be applied per customer, portfolio, product?\nDoes the system support minimum fee thresholds?\nCan fee calculation rules be configured without system customization?\nDoes it support custody fees, management fees, performance fees, transaction fees, brokerage commission, trailer fees, entry fees?\nCan system generate fee breakdowns per client portfolio?\nAre historical fee calculations stored?\nCan the system support fee reconciliation?'},
-        {id:'p2b-14', label:'Accounting / Tax', desc:'Does the system support accrual accounting?\nCan the system calculate and report taxes? Can it produce tax certificates for different products?\nAre accounting entries generated automatically?'},
-        {id:'p2b-15', label:'Fund Administration', desc:'Fund accounting and administration processes\nNAV calculation\nAutomatic fund accounting and administrations process\nRegulatory reporting'},
-        {id:'p2b-16', label:'Language support', desc:'Does the system offer Multilingual capability for all reports?'},
+      {id:'g-br', title:'Business & Functional Requirements (65 items, Business Reqs sheet)', num:'2.1', sheet:'Business Reqs', items:[
+        {id:'p2-br-001',label:'Client Onboarding',desc:'Client Static Data - Interface with CBS\n- Individual \n- Legal Entity',row:4,aa:'1'},
+        {id:'p2-br-002',label:'Client Onboarding',desc:'Questionnaires, ability to create them from UI not hard coded\n- Investment Profile\n- Knowldge & Experience',row:5,aa:'2'},
+        {id:'p2-br-003',label:'Client Onboarding',desc:'Set up with different portfolio managers per customer and the portfolio reporting both segregated and consolidated',row:6,aa:'3'},
+        {id:'p2-br-004',label:'Fees Admin',desc:'Monitoring the commission schemes for the calculation of management and transaction fees per product differentiated per portfolio',row:7,aa:'4'},
+        {id:'p2-br-005',label:'Portfolio Onboarding',desc:'- Beneficiaries\n- Personaccording to whose K&E investment appropriateness will be performed\n- Bank Account creation - Interface with CBS for internal Bank accounts',row:8,aa:'3'},
+        {id:'p2-br-006',label:'Portfolio Onboarding',desc:'Capability to monitor and produce reports across multiple portfolios for the same client /segment segregated or consolidated',row:9,aa:'6'},
+        {id:'p2-br-007',label:'Portfolio Position Keeping',desc:'- Real time position (Total, Settled, Unsettled, With/Without open Trades, Pledged)\n- Corporate Actions\n- Collateral Management \n- Parametric transaction pricing policies schemes\n- Progressive Cash Ledger',row:10,aa:'4'},
+        {id:'p2-br-008',label:'Reporting',desc:'Client Statement \n- Performance Calculation (TWR & IRR)\n- Attribution Analysis \n- Contribution Analysis\n- Period Transactions',row:11,aa:'5'},
+        {id:'p2-br-009',label:'Reporting — Confirmation Slips',row:12,aa:'6'},
+        {id:'p2-br-010',label:'Reporting — Cost & Charges',row:13,aa:'7'},
+        {id:'p2-br-011',label:'Reporting — Depreciation Report',row:14,aa:'9'},
+        {id:'p2-br-012',label:'Reporting — Ad hoc reporting capability',row:15,aa:'12'},
+        {id:'p2-br-013',label:'Reporting — Regulatory reporting',row:16,aa:'13'},
+        {id:'p2-br-014',label:'Trade Order Management',desc:'Clearing, settlement and Transfers on behalf of clients on omnibus and seggregate accounts in local and international markets',row:17,aa:'14'},
+        {id:'p2-br-015',label:'Trade Order Management',desc:'- Order Creation \n- Parametric Availability Check (Option for rules per service type)',row:18,aa:'10'},
+        {id:'p2-br-016',label:'Trade Order Management',desc:'- CBS Cash Block/Unblock\n- CBS Debit accounts\n- Interaction with other core systems (e.g. PCS) or Custodians (e.g. Euroclear)',row:19,aa:'11'},
+        {id:'p2-br-017',label:'Trade Order Management — Securities pledging/ unpledging',row:20,aa:'12'},
+        {id:'p2-br-018',label:'Trade Order Management — Appropriateness & Availability Checks',row:21,aa:'13'},
+        {id:'p2-br-019',label:'Trade Order Management',desc:'Bulk Orders \nCapability to import and manage transaction files',row:22,aa:'14'},
+        {id:'p2-br-020',label:'Trade Order Management',desc:'Submit & route orders to brokers via parametric channels\n- FIX\n- Custom APIs\n- Swift messages\n\n- Email',row:23,aa:'15'},
+        {id:'p2-br-021',label:'Trade Order Management — Receive Trades Confirmations/Fills from Brokers',row:24,aa:'16'},
+        {id:'p2-br-022',label:'Trade Order Management — Unbulk and distribute fills to client portfolios',row:25,aa:'17'},
+        {id:'p2-br-023',label:'Trade Order Management — Trade matching',row:26,aa:'23'},
+        {id:'p2-br-024',label:'Transfer agent — orders, corporate actions, confirmations, postitions',row:27,aa:'24'},
+        {id:'p2-br-025',label:'Invoicing — Parametric periodic portfolio charges schemes',row:28,aa:'18'},
+        {id:'p2-br-026',label:'Invoicing — Charges Accruals calculation and incorporate on portfolio position',row:29,aa:'19'},
+        {id:'p2-br-027',label:'Invoicing — Automatic mass periodic fees payment',row:30,aa:'20'},
+        {id:'p2-br-028',label:'Invoicing — Despatch of invoice and invoice break down to clients',row:31,aa:'21'},
+        {id:'p2-br-029',label:'Compliance — Compliance Rules set up',row:32,aa:'22'},
+        {id:'p2-br-030',label:'Compliance — Check order placement against pre and posr trade compliance rules',row:33,aa:'23'},
+        {id:'p2-br-031',label:'Compliance — Periodic compliance report generation',row:34,aa:'24'},
+        {id:'p2-br-032',label:'Compliance — SRD, CSDR late settlements (penalties/claims) complied',row:35,aa:'32'},
+        {id:'p2-br-033',label:'Compliance — NAV Pricing',row:36,aa:'33'},
+        {id:'p2-br-034',label:'Compliance — Pre Trade compliance -Investment limit monitoring',row:37,aa:'34'},
+        {id:'p2-br-035',label:'Custody — Fund Adiministrator',row:38,aa:'35'},
+        {id:'p2-br-036',label:'Custody — Register and Transfer agent',row:39,aa:'36'},
+        {id:'p2-br-037',label:'Communication Matrix',desc:'Parametric communication rules per functional category (Client Reporting, Corporate Actions, Invoicing, Confirmation Slips etc)',row:40,aa:'25'},
+        {id:'p2-br-038',label:'Investment Managemnt',desc:'Model Portfolios Definition (strategies)\n- Define Strategic Allocation targets\n- Define Tactical Allocation targets \n- Add any additional compliance rules',row:41,aa:'26'},
+        {id:'p2-br-039',label:'Investment Managemnt',desc:'Investment Proposal Creation \n- Comparisson between current and model position \n- Generate rebalancing recommendation \n- Estimate accomanying projected transaction fees\n- Generate and despatch proposal to client\n- Recieve approval/ rejection by client\n- Generate orders',row:42,aa:'27'},
+        {id:'p2-br-040',label:'Corporate Actions',desc:'Support all types of corporate actions and reflect them on portfolio position\n- Ability to receive and process Corporate Action Events from custodians\n- Ability to receive client instruction and forward them to custodian\nAbility to send information \n- Ability to process settlement confirmations from custodians',row:43,aa:'28'},
+        {id:'p2-br-041',label:'Instrument Maintenance',desc:'Interface with Data Provider\n- Instrument Creation \n- Instrument Static Data synchronization \n- Prices & FX Rates update',row:44,aa:'29'},
+        {id:'p2-br-042',label:'Collateral Management',desc:'Ablity to define collaterization policies\n- Define pledging hierarchy logic\n- Concentration %\n- Haircut %\n- Define LTV%, Warning%, & Margin Calls',row:45,aa:'30'},
+        {id:'p2-br-043',label:'Collateral Management',desc:'Automatic Pledge/Un pledge assets based on the new portfolio valuation and the policies above.',row:46,aa:'31'},
+        {id:'p2-br-044',label:'Collateral Management — Generate LTV reports and warning, margin call notifications',row:47,aa:'32'},
+        {id:'p2-br-045',label:'EOD Procedures',desc:'Synchronization with CBS and other core systems [Realtime if CBS allows it]\n- Client Static Data\n- Bank Accounts\n- Fixed Term Deposits (Initiation - Maturities - Accruals) Transactions\n- Deposits - Withdrawals',row:48,aa:'33'},
+        {id:'p2-br-046',label:'EOD Procedures — Cash Position reconciliation with CBS',row:49,aa:'35'},
+        {id:'p2-br-047',label:'EOD Procedures — Securities Positions Reconciliation with Sub Custodians',row:50,aa:'36'},
+        {id:'p2-br-048',label:'Local Custody',desc:'Support SWIFT Messaging & Custom Formats\nPerform 3 way Matching\n- Receive Client Instruction \n- Corporate Actions \n- Receive Broker Trades\n- Receive Exchange or CSD Trades\n- Send Allegements in case of disagreement\n- Send clients statements\n- Send to clients corporate actions',row:51,aa:'37'},
+        {id:'p2-br-049',label:'Local Custody',desc:'Perform Securities/Cash Availability\n- Define parametric Security and Cash Availability logic per service type\n- Perform pledging',row:52,aa:'38'},
+        {id:'p2-br-050',label:'Local Custody',desc:'- Settle transaction automatically based on parametric logic\n- Define cut off times parametrically\n- Automatic Despatch Setlement Confirmations to clients',row:53,aa:'39'},
+        {id:'p2-br-051',label:'Local Custody — Error Handling - SWIFT Message Repair',row:54,aa:'40'},
+        {id:'p2-br-052',label:'Local Custody — Δυνατότητα επικοινωνίας ATHEX CSD (Σ.Α.Τ depository)',row:55,aa:'52'},
+        {id:'p2-br-053',label:'International Custody — Receive Client Instructions (SWIFT - Custom - Offline modes- excel files)',row:56,aa:'41'},
+        {id:'p2-br-054',label:'International Custody — Perform Cash/ Securities Availability Check',row:57,aa:'42'},
+        {id:'p2-br-055',label:'International Custody — Forward Settlement Instructions to Sub Custodians (SWIFT - Custom - Offline modes)',row:58,aa:'43'},
+        {id:'p2-br-056',label:'International Custody',desc:'Receive Sub Custodian settlement acknowledgement or Error cases\n- Forward Messages to client',row:59,aa:'44'},
+        {id:'p2-br-057',label:'International Custody',desc:'Receive Settlement Confirmation from Sub Custodian \n- Forward Messages to Clients',row:60,aa:'45'},
+        {id:'p2-br-058',label:'International Custody — Error Handling - SWIFT Messages Repair',row:61,aa:'46'},
+        {id:'p2-br-059',label:'International Custody — Define Cut off times parametrically per sub custodian, asset type etc',row:62,aa:'47'},
+        {id:'p2-br-060',label:'Asset Classes',desc:'Mutual Funds, Bonds, Structure Products, Derivatives, OTC Derivatives (includes IRS, FWD), Energy, Certificates, AIFS etc',row:63,aa:'48'},
+        {id:'p2-br-061',label:'Reconciliation Processes',desc:'Reconciiliation of orders, trades, positions with different parties-clients, per counterparty/custodian',row:64,aa:'49'},
+        {id:'p2-br-062',label:'Local Custody',desc:'Connectivity with the Athens Stock Exchange, Athex CSD, Athex Clear in proprietary protocol/ API interface',row:65,aa:'50'},
+        {id:'p2-br-063',label:'Tax management',desc:'Ability to calculate and withhold capital gain and other tax requirements \nProduce tax statements per product /per client',row:66,aa:'51'},
+        {id:'p2-br-064',label:'Custody — ability to monitor pending orders',row:67,aa:'52'},
+        {id:'p2-br-065',label:'Operational Efficiency — KPI and SLA monitoring',row:68,aa:'53'},
       ]}
     ]
   },
   p3: {
     label:'Phase 3', color:'blue',
     groups:[
-      {id:'g-itA', title:'Section A — On-Premises Architecture (45 questions)', num:'3A', items:[
-        {id:'p3-a01', label:'A1 — Architecture diagram', desc:'Full diagram: modules, tiers, integration with bank systems and 3rd parties. Must be produced.', hint:'Lead architect'},
-        {id:'p3-a02', label:'A2–A5 — Scalability & cloud-native', desc:'Does architecture scale? Autoscaling? Container/serverless? Required compute/storage resources?', hint:'IT architect'},
-        {id:'p3-a03', label:'A6–A7 — 3rd-party components & OS', desc:'Any bundled 3rd-party products? Licensing, support, upgrade plans. Commercial OS/platform requirements?', hint:'IT + procurement'},
-        {id:'p3-a04', label:'A8–A9 — Key management & env sync', desc:'How are encryption keys managed? How are non-prod environments kept in sync with production?', hint:'Security/IT ops'},
-        {id:'p3-a05', label:'A10–A14 — Availability, redundancy & DR', desc:'HA (active-active or active-failover)? Performance testing methodology? DR process, backup strategy, replication?', hint:'Infrastructure team'},
-        {id:'p3-a06', label:'A15–A18 — Logging & Monitoring', desc:'Audit trail capability, SIEM integration, configurable log retention, log types (Error, Access, Perf, Security, Audit, Debug).', hint:'IT ops / security'},
-        {id:'p3-a07', label:'A19–A23 — Support model', desc:'Support channels, contract tiers (basic/silver/gold), support centre locations, certified Greek partner, single point of contact.', hint:'Customer success / sales'},
-        {id:'p3-a08', label:'A24–A27 — Integration methods & encryption', desc:'SDK, REST/SOAP, Event Streams, SFTP. AuthN/AuthZ for external systems. HTTPS/TLS encrypted channels. At-rest encryption.', hint:'Integration/security team'},
-        {id:'p3-a09', label:'A28–A34 — UI & Access Control', desc:'Desktop/tablet/mobile support. Web-based UI. Responsive. Citrix compatible (XenApp/XenDesktop, WS2016). SSO with AD/EntraID (SAML, Kerberos, ADFS, OpenID, OAuth). Online user & role management. AD group-based access.', hint:'IT / dev team'},
-        {id:'p3-a10', label:'A35–A40 — Releases & Roadmap', desc:'Current release version. Release schedule. Next release date & features. 3-year enhancement history. Upgrade/patch procedure.', hint:'Product management'},
-        {id:'p3-a11', label:'A41–A43 — CI/CD & Change Management', desc:'Version control (Git)? CI/CD pipeline? Environment-specific configuration management?', hint:'DevOps team'},
-        {id:'p3-a12', label:'A44–A45 — Technical Training', desc:'Training delivered to bank staff (users, admins). Specialist skills required (TSQL, PLSQL, .Net, Java, C#)?', hint:'Professional services'},
-      ]},
-      {id:'g-itB', title:'Section B — SaaS Architecture (58 questions)', num:'3B', items:[
-        {id:'p3-b01', label:'B1–B4 — Cloud model & providers', desc:'IaaS/PaaS/SaaS? Which cloud providers? Which regions?', hint:'IT to confirm'},
-        {id:'p3-b02', label:'B5 — EU Hosting (MANDATORY)', desc:'Solution MUST be hosted in EU region. This is marked mandatory. Must confirm explicitly.', hint:'Critical — mandatory'},
-        {id:'p3-b03', label:'B6 & B9 — Scalability & tenant isolation (MANDATORY)', desc:'Architecture scales (mandatory). Dedicated hosting model OR isolated tenant data in shared model — mandatory.', hint:'IT architect'},
-        {id:'p3-b04', label:'B21–B24 — SLA / RTO / RPO', desc:'What SLA % is offered? RTO? RPO? Scheduled maintenance windows? Need specific figures.', hint:'Infrastructure team'},
-        {id:'p3-b05', label:'B34 — Backup encryption (MANDATORY)', desc:'Backups must be encrypted. This is mandatory. Must confirm explicitly.', hint:'Critical — mandatory'},
-        {id:'p3-b06', label:'B35 — Data extraction (MANDATORY)', desc:'Bank must be able to extract and store solution data to its own repositories. Mandatory.', hint:'Critical — mandatory'},
-        {id:'p3-b07', label:'B29, B41 — Monitoring portal & incident management', desc:'UI/mobile for monitoring & telemetry? Azure EntraID option? Incident management process and tooling?', hint:'IT ops'},
-      ]},
-      {id:'g-itC', title:'Section C — General IT (applies to both models)', num:'3C', items:[
-        {id:'p3-c01', label:'C1–C8 — IAM & Security (ALL MANDATORY)', desc:'RBAC, data visibility by user/group, multi-level approvals (maker/checker), parametric user menus, privileged account management, password complexity, renewal policies, self-service reset.', hint:'Security/IT — all mandatory'},
-        {id:'p3-c02', label:'C12, C14, C16–C19 — Reporting (MANDATORY items)', desc:'Standard reports (positions, cash, settlement, reconciliation), data export (CSV/XML/JSON/API), scheduled reporting, data warehouse integration, DMS connectivity, EOD position reconciliation.', hint:'Product + integration — mandatory'},
-        {id:'p3-c03', label:'C20 — Admin Functionality (MANDATORY)', desc:'App Admin role (system health UI, menu config, system config via UI). Functional Admin role (user creation, password reset, audit trail via UI).', hint:'Product team — mandatory'},
-        {id:'p3-c04', label:'C21–C22 — Alerting (MANDATORY)', desc:'Parametric alert rules per functional category. Parametric alert recipient user groups per category.', hint:'Product team — mandatory'},
-        {id:'p3-c05', label:'C23–C26 — Instrument Prices & FX (MANDATORY)', desc:'Bloomberg/Refinitiv instrument creation and price/FX update. Price groups per instrument/portfolio. Price update report (succeeded/failed).', hint:'Data vendor integrations — mandatory'},
-        {id:'p3-c06', label:'C27–C35 — CBS Integration (MANDATORY)', desc:'Central Product Factory (API/file), bank account opening, balance sync, client record fetch/sync, blocks/unblocks, debit postings, cash availability, transaction posting.', hint:'Integration team — critical mandatory'},
-        {id:'p3-c07', label:'C37–C41 — Implementation & Migration', desc:'Typical implementation phases/duration for a bank this size. Data migration from existing IMS/custody system. Test strategy, UAT test data. Parallel run / shadow mode capability.', hint:'Delivery / PS team'},
-        {id:'p3-c08', label:'C44–C46 — Support & Monitoring', desc:'Severity classification (SEV1–4) with response/resolution SLAs. Operational metric sharing. Monitoring hooks/APIs for enterprise monitoring stack (Prometheus, Splunk, Elastic, AppDynamics). C46 mandatory.', hint:'Support + IT ops'},
-        {id:'p3-c09', label:'C47–C49 — Product Roadmap', desc:'3–5 year roadmap (new markets, regulatory, cloud/API modernisation). Client change request process. LTS/release support windows.', hint:'Product management'},
+      {id:'g-itA', title:'Section A — On-Premises Architecture (45 questions, IT - Architecture sheet)', num:'3A', sheet:'IT - Architecture ', section:'A', items:[
+        {id:'p3-a-001',label:'A1 — Proposed Architecture & Resources Requirements',desc:'Provide the proposed Architecture Diagram showing the different modules/parts/tiers and the connections between them, including integration with Bank\'s systems & 3rd party products.',row:5,aa:'1'},
+        {id:'p3-a-002',label:'A2 — The solution architecture scales in order to cope with increased demands',row:6,aa:'2'},
+        {id:'p3-a-003',label:'A3 — The solution supports autoscaling (i.e to cope with traffic spikes)',row:7,aa:'3'},
+        {id:'p3-a-004',label:'A4 — The product uses cloud native technologies and architectures (i.e. containers, s…',desc:'The product uses cloud native technologies and architectures (i.e. containers, serverless services). Describe the supported technologies.',row:8,aa:'4'},
+        {id:'p3-a-005',label:'A5 — Describe the technical requirements of the proposed solution regarding the requi…',desc:'Describe the technical requirements of the proposed solution regarding the required resources (i.e. cloud services, computational resources, storage , platforms)',row:9,aa:'5'},
+        {id:'p3-a-006',label:'A6 — Are there any third-party components/products packaged with the solution? If yes…',desc:'Are there any third-party components/products packaged with the solution? If yes, which ones? In which tier(s) of the solution’s architecture do they fit in and how they are integrated within the solution? Please provide information about the licensing, the support and the upgrade of third party components',row:10,aa:'6'},
+        {id:'p3-a-007',label:'A7 — The solution runs on commercial editions of:\n- Operating System\n- Platform (i.e.…',desc:'The solution runs on commercial editions of:\n- Operating System\n- Platform (i.e., Docker, OCP, OKD)\n- Other Software Products (i.e., Web, Application, and Database servers)',row:11,aa:'7'},
+        {id:'p3-a-008',label:'A8 — Describe how the product securely handles key management?',row:12,aa:'8'},
+        {id:'p3-a-009',label:'A9 — Describe the process to keep up in sync the non-production environments (e.g., d…',desc:'Describe the process to keep up in sync the non-production environments (e.g., dev/uat/pre-prod, etc.) with production?',row:13,aa:'9'},
+        {id:'p3-a-010',label:'A10 — Solution Availability & Redundancy',desc:'The solution supports high availability (active-active or active-failover) on every tier (i.e. frontend, middleware, database, etc.)',row:14,aa:'10'},
+        {id:'p3-a-011',label:'A11 — Describe your performance testing methodology (load tests, stress tests, soak te…',desc:'Describe your performance testing methodology (load tests, stress tests, soak tests) and tools used.',row:15,aa:'11'},
+        {id:'p3-a-012',label:'A12 — How do you detect and manage performance degradations in production (APM, synthe…',desc:'How do you detect and manage performance degradations in production (APM, synthetic monitoring, auto-scaling triggers)?',row:16,aa:'12'},
+        {id:'p3-a-013',label:'A13 — Describe the Disaster recovery process supported (i.e. activation on a secondary…',desc:'Describe the Disaster recovery process supported (i.e. activation on a secondary site/region, recommended backup strategy, data replication method).',row:17,aa:'13'},
+        {id:'p3-a-014',label:'A14 — Describe the backup requirements (i.e. VM image, database backup, file level bac…',desc:'Describe the backup requirements (i.e. VM image, database backup, file level backup) in order to recover the system in certain point of time.',row:18,aa:'14'},
+        {id:'p3-a-015',label:'A15 — Logging & Monitoring',desc:'A robust audit logging mechanisms to track user actions and activities should be implemented. Describe the solution’s logging/journaling/audit trail capabilities.',row:19,aa:'15'},
+        {id:'p3-a-016',label:'A16 — The solution integrates with a centralized logging or SIEM infrastructure, describe how?',desc:'The AIS Custody Ecosystem leverages a shared embedded logging mechanism along with a corresponding monitoring system across all its components. Integration with centralized platforms is not currently available but can be supported upon request.',row:20,aa:'16'},
+        {id:'p3-a-017',label:'A17 — The log retention policy should be configurable. Please describe the methodology…',desc:'The log retention policy should be configurable. Please describe the methodology for managing/archiving logs\nAll types of logs (Security, Application logs, Audit logs) are stored in database and the retention policy is defined by the organazation to meet its requirements.',row:21,aa:'17'},
+        {id:'p3-a-018',label:'A18 — The solution tracks all type of Logs such as Error, Access, Performance, Securit…',desc:'The solution tracks all type of Logs such as Error, Access, Performance, Security, Audit, Debug and Application specific Logs. Please provide the available format of these logs and where they are stored.\nAll log types, including security, application, and audit logs, are stored in a database. The log retention policy is defined by the organization in accordance with its operational, regulatory, and business requirements.',row:22,aa:'18'},
+        {id:'p3-a-019',label:'A19 — Support — Describe what support channels are available for the product (i.e. phone, on-line Help).',row:23,aa:'19'},
+        {id:'p3-a-020',label:'A20 — Describe the available support contracts (i.e. basic, silver, gold).',row:24,aa:'20'},
+        {id:'p3-a-021',label:'A21 — Where is the location of the support centers (for all support levels)?',row:25,aa:'21'},
+        {id:'p3-a-022',label:'A22 — There is a certified partner for your product available in Greece,',row:26,aa:'22'},
+        {id:'p3-a-023',label:'A23 — The Bank should have a single support contact, covering also 3rd party software …',desc:'The Bank should have a single support contact, covering also 3rd party software products included in the offer.',row:27,aa:'23'},
+        {id:'p3-a-024',label:'A24 — Interfaces & Interoperability',desc:'Describe the available methods/technologies/protocols/solutions that the product utilizes in order to (bi-directionaly) integrate with external systems or applications (i.e. SDKs. REST/SOAP API, Events Streams/message queues, File based/SFTP).',row:28,aa:'24'},
+        {id:'p3-a-025',label:'A25 — Describe the AuthN/AuthZ options provided for external systems/applications to i…',desc:'Describe the AuthN/AuthZ options provided for external systems/applications to integrate with your solution.\nAuthN: Token-based authentication is implemented using JSON Web Tokens (JWTs) with defined expiration times, issued after successful username and password authentication. This approach enables Single Sign-On (SSO) across all exposed functionalities of the integration layer.',row:29,aa:'25'},
+        {id:'p3-a-026',label:'A26 — All solution\'s communication are established over encrypted channels (e.g., http…',desc:'All solution\'s communication are established over encrypted channels (e.g., https, tlssql, etc.)\nAll AIS Ecosystem\'s APIs use https protocol.',row:30,aa:'26'},
+        {id:'p3-a-027',label:'A27 — The solution supports at-rest encryption of data (incl. Databases)',row:31,aa:'27'},
+        {id:'p3-a-028',label:'A28 — User Interface & Access Control',desc:'Describe the supported device types the product’s UI is available (desktop, tablet, smart phone).\nThe AIS Custody Ecosystem user interfaces are fully supported on desktop devices. In addition, a significant portion of the system’s functionality is accessible on any device capable of using a standard web browser.',row:32,aa:'28'},
+        {id:'p3-a-029',label:'A29 — The product\'s UI is web based. Describe the supported web browsers, the supporte…',desc:'The product\'s UI is web based. Describe the supported web browsers, the supported versions and any other additional required components (Java, ΑctiveX, Plug-ins etc.).\nGpikridas',row:33,aa:'29'},
+        {id:'p3-a-030',label:'A30 — The product\'s UI is responsive?',desc:'Windows forms(No) / WEB App (Yes).',row:34,aa:'30'},
+        {id:'p3-a-031',label:'A31 — The product’s UI operate over Citrix. Which are the compatible XenApp/XenDesktop…',desc:'The product’s UI operate over Citrix. Which are the compatible XenApp/XenDesktop versions? Is it compatible with Windows Server 2016? Does the solution’s UI have any specific requirements when it operates on a multiuser environment?\nThe solution is designed to operate within a Citrix environment and supports all Windows Server versions 2016 and above.',row:35,aa:'31'},
+        {id:'p3-a-032',label:'A32 — The product supports SSO with Bank\'s AD and/or EntraID. Describe all the protoco…',desc:'The product supports SSO with Bank\'s AD and/or EntraID. Describe all the protocols and systems that the product supports for user authentication and authorization (SAML, Kerberos, ADFS, OpenID, Oauth, etc.)\nThe AIS Custody Ecosystem does not currently support Single Sign-On (SSO) integration with the Bank’s Active Directory (AD) and/or Microsoft Entra ID.',row:36,aa:'32'},
+        {id:'p3-a-033',label:'A33 — The product offers an online interface for user and role management.',row:37,aa:'33'},
+        {id:'p3-a-034',label:'A34 — The product can authorize user access/roles based on AD groups.',row:38,aa:'34'},
+        {id:'p3-a-035',label:'A35 — Releases & Roadmap — Which is the current (latest) release of the solution?',row:39,aa:'35'},
+        {id:'p3-a-036',label:'A36 — What is the standard Release schedule (e.g. bi-annual, annual)?',row:40,aa:'36'},
+        {id:'p3-a-037',label:'A37 — When is the next Release scheduled for?',row:41,aa:'37'},
+        {id:'p3-a-038',label:'A38 — What new features/improvements are included in the next scheduled release?',row:42,aa:'38'},
+        {id:'p3-a-039',label:'A39 — Provide a history of major platform enhancements made in the last three years.',row:43,aa:'39'},
+        {id:'p3-a-040',label:'A40 — Describe the Update/Upgrade procedure both for fixes/patches and Releases.',row:44,aa:'40'},
+        {id:'p3-a-041',label:'A41 — Change Management & Deployments',desc:'The solution uses a version control system (e.g., Git) to manage application code and configuration?.',row:45,aa:'41'},
+        {id:'p3-a-042',label:'A42 — The solution implements a CI/CD (Continuous Integration/Continuous Deployment) p…',desc:'The solution implements a CI/CD (Continuous Integration/Continuous Deployment) pipeline to automate the build, test, and deployment processes;',row:46,aa:'42'},
+        {id:'p3-a-043',label:'A43 — The solution maintain environment-specific configurations separately from the ap…',desc:'The solution maintain environment-specific configurations separately from the application code to facilitate environment portability',row:47,aa:'43'},
+        {id:'p3-a-044',label:'A44 — Technical Training',desc:'Describe the training that will be delivered by vendor to Alpha Bank’s staff (Users, Administrators, etc.)',row:48,aa:'44'},
+        {id:'p3-a-045',label:'A45 — Describe any specialized technical skill for Alpha Bank’s staff, required or rec…',desc:'Describe any specialized technical skill for Alpha Bank’s staff, required or recommended in order to support implementation and administration of the Solution and the relevant services (ex TSQL, PLSQL, .Net Framework Java, C# etc)',row:49,aa:'45'},
+      ]},      {id:'g-itB', title:'Section B — SaaS Architecture (58 questions, IT - Architecture sheet)', num:'3B', sheet:'IT - Architecture ', section:'B', items:[
+        {id:'p3-b-001',label:'Proposed Architecture & Resources Requirements — Which cloud computing service models are supported (IaaS, PaaS, SaaS)?',row:51,aa:'1'},
+        {id:'p3-b-002',label:'B2 — Provide the proposed Architecture Diagram showing the different modules/parts/ti…',desc:'Provide the proposed Architecture Diagram showing the different modules/parts/tiers and the connections between them, including integration with Bank\'s systems & 3rd party products.\nThis is included in the Piraeus RFP presentation.',row:52,aa:'2'},
+        {id:'p3-b-003',label:'B3 — In which cloud provider(s) - Including any Private Clouds - is the solution available?',row:53,aa:'3'},
+        {id:'p3-b-004',label:'B4 — In which Regions is the solution available?',row:54,aa:'4'},
+        {id:'p3-b-005',label:'B5 — The solution should be hosted in the EU region.',hint:'⚠️ Mandatory',row:55,aa:'5'},
+        {id:'p3-b-006',label:'B6 — The solution architecture scales in order to cope with increased demands',desc:'The AIS Custody Ecosystem solution is built on an architectural design that supports horizontal scalability through the use of load balancers or by leveraging the native scalability tools provided by the cloud service provider.',hint:'⚠️ Mandatory',row:56,aa:'6'},
+        {id:'p3-b-007',label:'B7 — The solution supports autoscaling (i.e to cope with traffic spikes)',desc:'The AIS Custody Ecosystem solution supports autoscaling by leveraging the native elasticity tools provided by the cloud service provider.',row:57,aa:'7'},
+        {id:'p3-b-008',label:'B8 — The product uses cloud native technologies and architectures (i.e. containers, s…',desc:'The product uses cloud native technologies and architectures (i.e. containers, serverless services). Describe the supported technologies.\nThe AIS Custody Ecosystem solution currently leverages cloud-native technologies and architectural patterns at the presentation and integration layers.',row:58,aa:'8'},
+        {id:'p3-b-009',label:'B9 — The product offers a dedicated hosting model for its tenants. If not, In a share…',desc:'The product offers a dedicated hosting model for its tenants. If not, In a shared hosting model, how does the product isolate the services offered and data stored, between multiple tenants (i.e. dedicated DB instances, dedicated storage account, logs)?\nThe AIS Custody Ecosystem solution currently does not support a shared hosting model.',hint:'⚠️ Mandatory',row:59,aa:'9'},
+        {id:'p3-b-010',label:'B10 — The systems supporting the services should be up to date (i.e. security patching…',desc:'The systems supporting the services should be up to date (i.e. security patching frequency, platfroms and components updates to latest versions)? Describe your patching policy/cycle.',row:60,aa:'10'},
+        {id:'p3-b-011',label:'B11 — Describe how the product securely handles key management?',row:61,aa:'11'},
+        {id:'p3-b-012',label:'B12 — The solution permits a "Bring your own Key" approach for the data encryption',row:62,aa:'12'},
+        {id:'p3-b-013',label:'B13 — The solution provides non-production (e.g., dev/uat/pre-prod,etc.) and productio…',desc:'The solution provides non-production (e.g., dev/uat/pre-prod,etc.) and production environments - Describe the process to keep them up in sync with production?',row:63,aa:'13'},
+        {id:'p3-b-014',label:'B14 — Solution Availability & Redundancy',desc:'The solution supports high availability (active-active or active-failover) on every tier (i.e. frontend, middleware, database, etc.)\nThe AIS Custody Ecosystem solution supports high availability by leveraging the tools provided by the cloud service provider.',row:64,aa:'14'},
+        {id:'p3-b-015',label:'B15 — Describe your performance testing methodology (load tests, stress tests, soak te…',desc:'Describe your performance testing methodology (load tests, stress tests, soak tests) and tools used.',row:65,aa:'15'},
+        {id:'p3-b-016',label:'B16 — How do you detect and manage performance degradations in production (APM, synthe…',desc:'How do you detect and manage performance degradations in production (APM, synthetic monitoring, auto-scaling triggers)?\nThe AIS Custody Ecosystem solution currently does not support performance degradations detection. Μπορούμε να φτιάξουμε αν χρειαστεί μέσω της κονσόλας.',row:66,aa:'16'},
+        {id:'p3-b-017',label:'B17 — Describe the Disaster recovery process supported (i.e. activation on a secondary…',desc:'Describe the Disaster recovery process supported (i.e. activation on a secondary site/region, recommended backup strategy, data replication method).',row:67,aa:'17'},
+        {id:'p3-b-018',label:'B18 — The Disaster Recovery systems supporting the services should provide the same le…',desc:'The Disaster Recovery systems supporting the services should provide the same level of performance as the Production environment.',row:68,aa:'18'},
+        {id:'p3-b-019',label:'B19 — Failover and Failback to DR should be transparent to the Bank.',row:69,aa:'19'},
+        {id:'p3-b-020',label:'B20 — Disaster Recovery and BCP testing executed at least once a year (Results shall b…',desc:'Disaster Recovery and BCP testing executed at least once a year (Results shall be shared with the Bank)',row:70,aa:'20'},
+        {id:'p3-b-021',label:'B21 — What are the supported SLA offerings of the product (in %)?',row:71,aa:'21'},
+        {id:'p3-b-022',label:'B22 — Please state the supported RTO of the solution',row:72,aa:'22'},
+        {id:'p3-b-023',label:'B23 — Please state the supported RPO of the solution',row:73,aa:'23'},
+        {id:'p3-b-024',label:'B24 — What are the scheduled maintenance windows of the product (if any)?',row:74,aa:'24'},
+        {id:'p3-b-025',label:'B25 — Logging & Monitoring',desc:'A robust audit logging mechanisms to track user actions and activities should be implemented. Describe the solution’s logging/journaling/audit trail capabilities.',row:75,aa:'25'},
+        {id:'p3-b-026',label:'B26 — The solution integrates with a centralized logging or SIEM infrastructure, describe how?',desc:'The AIS Custody Ecosystem leverages a shared, embedded logging mechanism accompanied by a corresponding monitoring system across all components. Integration with centralized logging platforms is not currently available; however, it can be supported by implementing a dedicated endpoint to expose logging entries upon request.',row:76,aa:'26'},
+        {id:'p3-b-027',label:'B27 — The log retention policy should be configurable. Please describe the methodology…',desc:'The log retention policy should be configurable. Please describe the methodology for managing/archiving logs\nAll types of logs (Security, Application logs, Audit logs) are stored in database and the retention policy is defined by the organazation to meet its requirements.',row:77,aa:'27'},
+        {id:'p3-b-028',label:'B28 — The solution tracks all type of Logs such as Error, Access, Performance, Securit…',desc:'The solution tracks all type of Logs such as Error, Access, Performance, Security, Audit, Debug and Application specific Logs. Please provide the available format of these logs and where they are stored.\nMust attach a file with details.',row:78,aa:'28'},
+        {id:'p3-b-029',label:'B29 — The solution offers a UI or a Mobile application for an authorized user to view …',desc:'The solution offers a UI or a Mobile application for an authorized user to view monitoring & telemetry data of the service. Is Azure EntraID an option for Authorization to the respective Interface? (please elaborate on the information available at the application and authorization options).\nThe AIS Custody Ecosystem solution offers Custody Administration Console Application to view monitoring & telemetry data of the service. Integration with Microsoft Entra ID is not currently supported.',row:79,aa:'29'},
+        {id:'p3-b-030',label:'B30 — Backup — Describe your backup policy.',row:80,aa:'30'},
+        {id:'p3-b-031',label:'B31 — How many copies are made and in which location are stored (i.e. different datace…',desc:'How many copies are made and in which location are stored (i.e. different datacenter from the backup resource, different region).',row:81,aa:'31'},
+        {id:'p3-b-032',label:'B32 — What is the backup retention policy?',row:82,aa:'32'},
+        {id:'p3-b-033',label:'B33 — Please describe the procedure for the Bank to activate data restore?',row:83,aa:'33'},
+        {id:'p3-b-034',label:'B34 — The backups are encrypted.',hint:'⚠️ Mandatory',row:84,aa:'34'},
+        {id:'p3-b-035',label:'B35 — Describe the options available for tha Bank to extract and store any solution\'s …',desc:'Describe the options available for tha Bank to extract and store any solution\'s data to its own repositories.',hint:'⚠️ Mandatory',row:85,aa:'35'},
+        {id:'p3-b-036',label:'B36 — Support — Describe what support channels are available for the product (i.e. phone, on-line Help).',row:86,aa:'36'},
+        {id:'p3-b-037',label:'B37 — Describe the available support contracts (i.e. basic, silver, gold).',row:87,aa:'37'},
+        {id:'p3-b-038',label:'B38 — Where is the location of the support centers (for all support levels)?',row:88,aa:'38'},
+        {id:'p3-b-039',label:'B39 — There is a certified partner for your product available in Greece,',row:89,aa:'39'},
+        {id:'p3-b-040',label:'B40 — The Bank should have a single support contact, covering also 3rd party software …',desc:'The Bank should have a single support contact, covering also 3rd party software products included in the offer.',row:90,aa:'40'},
+        {id:'p3-b-041',label:'B41 — Describe the Incident Management process and tools for managing, monitoring and …',desc:'Describe the Incident Management process and tools for managing, monitoring and communicating incidents (planned or unplanned downtime), that could disrupt the services provided to the Bank.',row:91,aa:'41'},
+        {id:'p3-b-042',label:'B42 — Interfaces & Interoperability',desc:'Describe the available methods/technologies/protocols/solutions that the product utilizes in order to (bi-directionaly) integrate with external systems or applications (i.e. SDKs. REST/SOAP API, Events Streams/message queues, File based/SFTP).\nThe AIS Custody Ecosystem solution primarily utilizes REST API calls across the integration layer to enable bi-directional integration with external systems and applications. File-based integration mechanisms are also supported when required.',row:92,aa:'42'},
+        {id:'p3-b-043',label:'B43 — Describe the AuthN/AuthZ options provided for external systems/applications to i…',desc:'Describe the AuthN/AuthZ options provided for external systems/applications to integrate with your solution.\nAuthN: Token-based authentication is implemented using JSON Web Tokens (JWTs) with defined expiration times, issued after successful username and password authentication. This approach enables Single Sign-On (SSO) across all exposed functionalities of the integration layer.',row:93,aa:'43'},
+        {id:'p3-b-044',label:'B44 — All solution\'s communication are established over encrypted channels (e.g., http…',desc:'All solution\'s communication are established over encrypted channels (e.g., https, tlssql, etc.)\nAll AIS Ecosystem\'s APIs use https protocol.',row:94,aa:'44'},
+        {id:'p3-b-045',label:'B45 — The solution supports at-rest encryption of data (incl. Databases)',row:95,aa:'45'},
+        {id:'p3-b-046',label:'B46 — User Interface & Access Control',desc:'Describe the supported device types the product’s UI is available (desktop, tablet, smart phone).\nThe AIS Custody Ecosystem user interfaces are fully supported on any device capable of using a standard web browser.',row:96,aa:'46'},
+        {id:'p3-b-047',label:'B47 — The product\'s UI is web based. Describe the supported web browsers, the supporte…',desc:'The product\'s UI is web based. Describe the supported web browsers, the supported versions and any other additional required components (Java, ΑctiveX, Plug-ins etc.).\nGpikridas',row:97,aa:'47'},
+        {id:'p3-b-048',label:'B48 — The product\'s UI is responsive?',desc:'Yes',row:98,aa:'48'},
+        {id:'p3-b-049',label:'B49 — The product’s UI operate over Citrix. Which are the compatible XenApp/XenDesktop…',desc:'The product’s UI operate over Citrix. Which are the compatible XenApp/XenDesktop versions? Is it compatible with Windows Server 2016? Does the solution’s UI have any specific requirements when it operates on a multiuser environment?\n?????',row:99,aa:'49'},
+        {id:'p3-b-050',label:'B50 — The product supports SSO with Bank\'s AD and/or EntraID. Describe all the protoco…',desc:'The product supports SSO with Bank\'s AD and/or EntraID. Describe all the protocols and systems that the product supports for user authentication and authorization (SAML, Kerberos, ADFS, OpenID, Oauth, etc.)\nThe AIS Custody Ecosystem does not currently support Single Sign-On (SSO) integration with the Bank’s Active Directory (AD) and/or Microsoft Entra ID.',row:100,aa:'50'},
+        {id:'p3-b-051',label:'B51 — The product offers an online interface for user and role management.',row:101,aa:'51'},
+        {id:'p3-b-052',label:'B52 — The product can authorize user access/roles based on AD groups.',row:102,aa:'52'},
+        {id:'p3-b-053',label:'B53 — Releases & Roadmap — Which is the current (latest) release of the solution?',row:103,aa:'53'},
+        {id:'p3-b-054',label:'B54 — What is the standard Release schedule (e.g. bi-annual, annual)?',row:104,aa:'54'},
+        {id:'p3-b-055',label:'B55 — When is the next Release scheduled for?',row:105,aa:'55'},
+        {id:'p3-b-056',label:'B56 — What new features/improvements are included in the next scheduled release?',row:106,aa:'56'},
+        {id:'p3-b-057',label:'B57 — Provide a history of major platform enhancements made in the last three years.',row:107,aa:'57'},
+        {id:'p3-b-058',label:'B58 — Technical Training',desc:'Describe the training that will be delivered by vendor to Alpha Bank’s staff (Users, Administrators, etc.)',row:108,aa:'58'},
+      ]},      {id:'g-itC', title:'Section C — General IT (49 questions, IT - Architecture sheet)', num:'3C', sheet:'IT - Architecture ', section:'C', items:[
+        {id:'p3-c-001',label:'C1 — Security, identity & access management — Functianal Segragation — User role functional segragation',desc:'Ability to asign different functionality capabilities per user role or user',hint:'⚠️ Mandatory',row:110,aa:'1'},
+        {id:'p3-c-002',label:'C2 — Security, identity & access management — Data Visibility Segragaion — User/ User Role based data visibility',desc:'Ability to segragate data visibility based on user groups/ profit centers',hint:'⚠️ Mandatory',row:111,aa:'2'},
+        {id:'p3-c-003',label:'C3 — Security, identity & access management — Approvals — Multi approval level structure option',desc:'Ability to allow for multiple level of approvals (maker/ checker)',hint:'⚠️ Mandatory',row:112,aa:'3'},
+        {id:'p3-c-004',label:'C4 — Security, identity & access management — Parameterization options — Parametric User Menus definion per User Role',desc:'Ability to define diferent user menus, parametrically, per user role/ user group.',hint:'⚠️ Mandatory',row:113,aa:'4'},
+        {id:'p3-c-005',label:'C5 — Security, identity & access management — How are privileged accounts managed and monitored (admin, DBAs, support)?',hint:'⚠️ Mandatory',row:114,aa:'5'},
+        {id:'p3-c-006',label:'C6 — Security, identity & access management — Ability to set user password complexity requirement parametrically',hint:'⚠️ Mandatory',row:115,aa:'6'},
+        {id:'p3-c-007',label:'C7 — Security, identity & access management — Ability to define password renewal policies',hint:'⚠️ Mandatory',row:116,aa:'7'},
+        {id:'p3-c-008',label:'C8 — Security, identity & access management — Ability for user to reset/ retrieve password',hint:'⚠️ Mandatory',row:117,aa:'8'},
+        {id:'p3-c-009',label:'C9 — Security, identity & access management',desc:'Detail your vulnerability management lifecycle:\n- Frequency of vulnerability scans and penetration tests\n- Patch management timelines for critical, high and medium vulnerabilities\n- How security issues are communicated to clients.',row:118,aa:'9'},
+        {id:'p3-c-010',label:'C10 — Performance, capacity & scalability',desc:'Provide reference performance metrics from comparable clients:\n- Average and peak daily transaction volumes\n- Number of accounts/portfolios\n- End-of-day processing times\n- Corporate actions volume.',row:119,aa:'10'},
+        {id:'p3-c-011',label:'C11 — Performance, capacity & scalability',desc:'How does the system behave under peak loads (market open/close, quarter-end, corporate action peaks)?\nThe AIS Custody Ecosystem is designed to withstand peak workload conditions by default. Additionally, autoscaling can be supported, if required, by leveraging the native elasticity capabilities provided by the cloud service provider.',row:120,aa:'11'},
+        {id:'p3-c-012',label:'C12 — Reporting, analytics & data access',desc:'Describe standard reports provided for:\n- Positions and valuations\n- Cash and liquidity\n- Corporate actions and income\n- Settlement status and fails\n- Reconciliations and breaks',hint:'⚠️ Mandatory',row:121,aa:'12'},
+        {id:'p3-c-013',label:'C13 — Reporting, analytics & data access',desc:'How can the bank define custom reports and dashboards? Is there a built-in report designer or do you rely on external BI tools?',row:122,aa:'13'},
+        {id:'p3-c-014',label:'C14 — Reporting, analytics & data access',desc:'What data export mechanisms are available:\n- Scheduled file exports (CSV, XML, JSON)\n- Ad-hoc extracts\n- Direct query access (e.g., read-only DB views, OData, APIs)?',hint:'⚠️ Mandatory',row:123,aa:'14'},
+        {id:'p3-c-015',label:'C15 — Reporting, analytics & data access',desc:'Does the platform provide an online portal for internal users and/or external clients?\n- Tech stack of the portal\n- Customization options (branding, fields, widgets)\n- Access control and audit logging on the portal.',row:124,aa:'15'},
+        {id:'p3-c-016',label:'C16 — Reporting, analytics & data access — Ability to schedule reporting jobs',hint:'⚠️ Mandatory',row:125,aa:'16'},
+        {id:'p3-c-017',label:'C17 — Reporting, analytics & data access — Ability to integrate with banks data warehouse',hint:'⚠️ Mandatory',row:126,aa:'17'},
+        {id:'p3-c-018',label:'C18 — Reporting, analytics & data access — Ability to connect with banks Document Management System',desc:'Bank has its own Document Management System [DMS]. Client related reports like confirmation slips, client statements etc need to be sent to DMS',hint:'⚠️ Mandatory',row:127,aa:'18'},
+        {id:'p3-c-019',label:'C19 — Reporting, analytics & data access — EOD Position - Transactions Reconciliation with Sub Custodians',desc:'With option for parametric discrepancy thresholds',hint:'⚠️ Mandatory',row:128,aa:'19'},
+        {id:'p3-c-020',label:'C20 — Admin Functionalities',desc:'Dedicated user roles with corresponding UI functionalities for:\n- Application Administrator\n- Functional Administrator\nThere shoud be dedicated user roles with correspondig UI functionalities and dashboards. \n- Application Administrator: \n a. Be able to monitor system overall health (useage, services, apis) via UI\n b. Be able to add remove menu items (functionalities) from UI \n c. Be able to perform configuration of the system via the UI\n- Functional Administrator\n a. Be able to create new users via UI \n b. Reset passwords via UI\n c. Be able to check audit trails via UI',hint:'⚠️ Mandatory',row:129,aa:'20'},
+        {id:'p3-c-021',label:'C21 — Alerting — Ability to create Alert Rules per functional category',hint:'⚠️ Mandatory',row:130,aa:'21'},
+        {id:'p3-c-022',label:'C22 — Alerting — Ability to set up parametric alert notification recipient usergroups per alert category.',hint:'⚠️ Mandatory',row:131,aa:'22'},
+        {id:'p3-c-023',label:'C23 — Instrument Prices & FXRates — Instrument Creation via third party vendor',desc:'Bloomberg/Refinitiv etc',hint:'⚠️ Mandatory',row:132,aa:'23'},
+        {id:'p3-c-024',label:'C24 — Instrument Prices & FXRates — Prices & FX Rates Update via third party vendor',desc:'Bloomberg/Refinitiv etc',hint:'⚠️ Mandatory',row:133,aa:'24'},
+        {id:'p3-c-025',label:'C25 — Instrument Prices & FXRates — Price Groups Definition per Instrument & Portfolio',hint:'⚠️ Mandatory',row:134,aa:'25'},
+        {id:'p3-c-026',label:'C26 — Instrument Prices & FXRates — Ability to generate price and fx rates update report',desc:'Ability to genarate a report with the succeeded and failed price and fx rates update',hint:'⚠️ Mandatory',row:135,aa:'26'},
+        {id:'p3-c-027',label:'C27 — Core Banking System Integrations — Ability to open Instruments via Bank\'s Central Product Factory',desc:'What are the offered solutions: \n1. API \n2. File based',hint:'⚠️ Mandatory',row:136,aa:'27'},
+        {id:'p3-c-028',label:'C28 — Core Banking System Integrations — Ability to synchronize instruments with Central Product Factory',desc:'What are the offered solutions: \n1. API \n2. File based',hint:'⚠️ Mandatory',row:137,aa:'28'},
+        {id:'p3-c-029',label:'C29 — Core Banking System Integrations — Ability to open Bank Accounts using a middleware API with CBS',hint:'⚠️ Mandatory',row:138,aa:'29'},
+        {id:'p3-c-030',label:'Core Banking System Integrations — Ability to automatically synchronize bank account balance using a middleware API w…',hint:'⚠️ Mandatory',row:139,aa:'30'},
+        {id:'p3-c-031',label:'C31 — Core Banking System Integrations — Ability to fetch client record using a middleware API with CBS',hint:'⚠️ Mandatory',row:140,aa:'31'},
+        {id:'p3-c-032',label:'C32 — Core Banking System Integrations — Ability to synchronize Client records using a middleware API with CBS',hint:'⚠️ Mandatory',row:141,aa:'32'},
+        {id:'p3-c-033',label:'C33 — Core Banking System Integrations — Ability to perform Blocks/ Unblock using an API with CBS',hint:'⚠️ Mandatory',row:142,aa:'33'},
+        {id:'p3-c-034',label:'C34 — Core Banking System Integrations — Ability to post Debit using an API with CBS',hint:'⚠️ Mandatory',row:143,aa:'34'},
+        {id:'p3-c-035',label:'C35 — Core Banking System Integrations — Ability to Perform Cash Availability using an API with CBS',hint:'⚠️ Mandatory',row:144,aa:'35'},
+        {id:'p3-c-036',label:'C36 — Core Banking System Integrations — Ability to post transactions using an API with CBS',desc:'Break down every transtion to its accounting components and post them on CBS (Accounting System)',row:145,aa:'36'},
+        {id:'p3-c-037',label:'C37 — Implementation, migration & testing',desc:'Describe a typical implementation project for a bank of our size:\n- Phases, duration, key milestones\n- Roles and responsibilities (vendor vs bank)',row:146,aa:'37'},
+        {id:'p3-c-038',label:'C38 — Implementation, migration & testing',desc:'How do you handle data migration from an existing custody system:\n- Supported source systems\n- Data extraction, mapping and transformation\n- Trial conversions and reconciliation approach',row:147,aa:'38'},
+        {id:'p3-c-039',label:'C39 — Implementation, migration & testing',desc:'Describe your test strategy and accelerators:\n1. Standard test scenarios and test case libraries\n2. Support for automated testing (API tests, UI tests, regression packs).',row:148,aa:'39'},
+        {id:'p3-c-040',label:'C40 — Implementation, migration & testing',desc:'Do you provide pre-built test data sets (instruments, markets, corp actions) for UAT and training?',row:149,aa:'40'},
+        {id:'p3-c-041',label:'C41 — Implementation, migration & testing',desc:'How do you support parallel run / shadow mode with the legacy custody system, and what tools exist to compare results and reconcile differences?',row:150,aa:'41'},
+        {id:'p3-c-042',label:'C42 — Change Management & Deployments',desc:'What environments are impacted during an upgrade and what is the typical downtime (if any)?',row:151,aa:'42'},
+        {id:'p3-c-043',label:'C43 — Change Management & Deployments',desc:'How do you handle urgent regulatory changes that require fast-track deployment? Provide recent examples.',row:152,aa:'43'},
+        {id:'p3-c-044',label:'C44 — Support, monitoring & incident management',desc:'Explain your severity classification (SEV1–SEV4 or equivalent) and target response/resolution times for each.',row:153,aa:'44'},
+        {id:'p3-c-045',label:'C45 — Support, monitoring & incident management',desc:'Describe how you share operational metrics and health with clients (dashboards, monthly reports, service review meetings).',row:154,aa:'45'},
+        {id:'p3-c-046',label:'C46 — Support, monitoring & incident management',desc:'Do you expose monitoring hooks / APIs / logs that our internal teams can integrate into our enterprise monitoring stack (e.g., Prometheus, Splunk, Elastic, AppDynamics)?\nAt present, the AIS Custody Ecosystem solution does not offer native integration capabilities for monitoring hooks, APIs, or log exports; however, such capabilities can be enabled through the provision of appropriate endpoints upon request.',hint:'⚠️ Mandatory',row:155,aa:'46'},
+        {id:'p3-c-047',label:'C47 — Roadmap, upgrades & product governance',desc:'Summarize the product roadmap for the custody platform for the next 3–5 years, especially around:\n- New market coverage\n- Regulatory changes\n- Modernization (APIs, cloud, DevOps)',row:156,aa:'47'},
+        {id:'p3-c-048',label:'C48 — Roadmap, upgrades & product governance',desc:'How do you collect, prioritize and implement client change requests? Describe any client advisory boards or product forums.',row:157,aa:'48'},
+        {id:'p3-c-049',label:'C49 — Roadmap, upgrades & product governance',desc:'What is your policy for supporting older releases (LTS vs regular releases, support windows)?',row:158,aa:'49'},
       ]}
     ]
   },
@@ -840,85 +964,249 @@ const PHASES = {
         {id:'p4-r29', label:'Req 57–58 — Cloud security baselines', desc:'If cloud: follow Microsoft cloud security benchmark, Well-Architected Framework, AWS/GCP security best practices. Cloud Provider questionnaire must be answered.'},
         {id:'p4-r30', label:'Req 59 — Address existing solution weaknesses', desc:'New solution should address any findings and weaknesses identified in the current IMS solution.'},
       ]},
-      {id:'g-sr-onprem', title:'SR Questionnaire — On-Premises (SR1–SR42, Cyber Questionnaire OnPrem sheet)', num:'4.2', items:[
-        {id:'p4-sr-op01', label:'SR1 — RBAC enforcement', desc:'Does the solution ensure access to data/functions granted only to users with proper rights?', hint:'Select response: Full/Partial/Could be/Not Supported/N/A'},
-        {id:'p4-sr-op02', label:'SR2–SR3 — Authentication on all comms & central IdP', desc:'Authentication on all network comms. Credentials checked against central account repository or IdP.'},
-        {id:'p4-sr-op03', label:'SR4 — Out-of-box MFA', desc:'MFA feature available out of the box if Bank IdP integration is not feasible?'},
-        {id:'p4-sr-op04', label:'SR5 — Browser password save prevention', desc:'Can solution prevent "save password" / "remember my password" in web browsers? Centrally configurable for desktop clients?'},
-        {id:'p4-sr-op05', label:'SR6 — Azure EntraID integration', desc:'Can solution integrate with Azure EntraID (or similar) for authenticating internal and external users?'},
-        {id:'p4-sr-op06', label:'SR7 — SSO', desc:'Is Single Sign-On supported for authenticating inbound user access?'},
-        {id:'p4-sr-op07', label:'SR8 — All requests authorized', desc:'All requests (external UI and internal system-to-system) are properly authorized?'},
-        {id:'p4-sr-op08', label:'SR9 — Least Privilege & no conflicting roles', desc:'Grants minimum necessary permissions per role. Prevents multiple/conflicting role assignments.'},
-        {id:'p4-sr-op09', label:'SR10 — Parameterised stored procedures', desc:'Access to database data through parameterised stored procedures only?'},
-        {id:'p4-sr-op10', label:'SR11 — Web-based API for IDM role config', desc:'Does solution offer a web-based API for configuring user roles via an Identity Management System?'},
-        {id:'p4-sr-op11', label:'SR12 — AD group-based role assignment', desc:'Can solution assign roles and access rights based on Active Directory security groups?'},
-        {id:'p4-sr-op12', label:'SR13 — RBAC support', desc:'Does the solution support Role-Based Access Control?'},
-        {id:'p4-sr-op13', label:'SR14 — PII protection via app layer', desc:'PII inaccessible to unauthorized users. App layer enforces auth, authz, logging, auditing.'},
-        {id:'p4-sr-op14', label:'SR15 — Secure temp file management', desc:'Randomised names, access controls, secure cleanup, restricted indexing, no sensitive data in temp files.'},
-        {id:'p4-sr-op15', label:'SR16 — Encryption at rest', desc:'Sensitive data encrypted at rest with proper key management?'},
-        {id:'p4-sr-op16', label:'SR17 — Encryption in transit', desc:'Sensitive data encrypted in transit (HTTPS, SSL, TLS, sFTP, VPN)?'},
-        {id:'p4-sr-op17', label:'SR18 — Data masking per clearance level', desc:'Personal data can be displayed in masked form based on user clearance level?'},
-        {id:'p4-sr-op18', label:'SR19 — ISO 27001 & OWASP/NIST', desc:'Vendor ISO 27001 certified? Solution follows OWASP, NIST best practices?'},
-        {id:'p4-sr-op19', label:'SR20 — Security fix procedures', desc:'Vendor has procedures for timely provision of security fixes?'},
-        {id:'p4-sr-op20', label:'SR21 — Idle session timeout (configurable)', desc:'Idle session timeout built into application design and configurable?'},
-        {id:'p4-sr-op21', label:'SR22 — Web proxy support', desc:'Solution supports web proxy service for accessing external internet resources?'},
-        {id:'p4-sr-op22', label:'SR23 — Disable unnecessary components', desc:'Solution allows disabling unnecessary components/network services to reduce attack surface?'},
-        {id:'p4-sr-op23', label:'SR24 — Cybersecurity architecture diagram', desc:'Has vendor provided a comprehensive architecture diagram showing all connections, components, protocols?'},
-        {id:'p4-sr-op24', label:'SR25 — 3-layer architecture (no monolith)', desc:'Solution implements 3-layer architecture separating components logically?'},
-        {id:'p4-sr-op25', label:'SR26 — MDM/MAM for mobile app', desc:'If native mobile app: can MDM/MAM policies be enforced? App wrapping or MAM APIs?'},
-        {id:'p4-sr-op26', label:'SR27 — No elevated privileges required', desc:'Solution does NOT require superuser/root/admin execution? Detail any permissions needed.'},
-        {id:'p4-sr-op27', label:'SR28 — Technology stack hidden', desc:'System hides tech stack under normal, anomalous/error conditions? What mechanisms?'},
-        {id:'p4-sr-op28', label:'SR29 — Single active session per user', desc:'Only one active session per user at any time? Mechanisms for monitoring/management?'},
-        {id:'p4-sr-op29', label:'SR30 — n-Tier architecture (min 3 tiers)', desc:'Presentation, application, and data storage tiers separated in functionality and security?'},
-        {id:'p4-sr-op30', label:'SR31 — Multi-tenancy isolation', desc:'If multi-company use: how is tenant data/resources securely isolated on shared infrastructure?'},
-        {id:'p4-sr-op31', label:'SR32 — Data integrity in transmission', desc:'Critical data remains unaltered during transmission. Integrity checks and cryptographic verification.'},
-        {id:'p4-sr-op32', label:'SR33 — Input validation', desc:'All inputs verified and validated to prevent security vulnerabilities?'},
-        {id:'p4-sr-op33', label:'SR34 — File upload validation', desc:'Uploaded files validated for type, size, and scanned for viruses/malicious code?'},
-        {id:'p4-sr-op34', label:'SR35 — Tamper-proof log retention', desc:'Historical records (logs) maintained securely and protected against tampering?'},
-        {id:'p4-sr-op35', label:'SR36 — Non-repudiation for critical transactions', desc:'Verifiable proof of action, data integrity/origin, sender identity for critical/important transactions?'},
-        {id:'p4-sr-op36', label:'SR37 — Data masking or tokenization', desc:'Does solution employ data masking or tokenization for sensitive data?'},
-        {id:'p4-sr-op37', label:'SR38 — API security (OAuth, rate-limiting, best practices)', desc:'APIs secured with OAuth tokens, API keys, rate-limiting etc.? API security best practices followed?'},
-        {id:'p4-sr-op38', label:'SR39 — GDPR compliance', desc:'Does the solution comply with GDPR?'},
-        {id:'p4-sr-op39', label:'SR40 — PCI DSS, DORA, CIS, NIST, SWIFT CSCF/CSP compliance', desc:'Does the solution comply with PCI DSS, DORA, CIS, NIST, SWIFT CSCF/CSP?'},
-        {id:'p4-sr-op40', label:'SR41 — Cloud Provider & Cloud Service controls', desc:'Does the solution follow cloud security controls? Answer questions in separate Cloud tabs.'},
-        {id:'p4-sr-op41', label:'SR42 — Cloud security baselines', desc:'Microsoft cloud security benchmark, Well-Architected Framework, AWS/GCP best practices?'},
+      {id:'g-sr', title:'SR Questionnaire — Security Requirements (42 items, Security Reqs sheet)', num:'4.2', sheet:'Security Reqs', items:[
+        {id:'p4-sr-001',label:'SR1 — Access Control',desc:'With regards to enforcement of RBAC, does the solution ensure that access to information/data and functions/procedures is granted only to users with proper access rights?',row:4,aa:'1',qid:'SR1'},
+        {id:'p4-sr-002',label:'SR2 — Authentication',desc:'Is the solution designed so that authentication is implemented on all network communications (internal betweeen the various system components, external to/from third-party components, user/admin interfaces)?',row:5,aa:'2',qid:'SR2'},
+        {id:'p4-sr-003',label:'SR3 — Authentication',desc:'Is the solution designed so that credentials provided during the authentication process are checked against a central account repository or identity provider?',row:6,aa:'3',qid:'SR3'},
+        {id:'p4-sr-004',label:'SR4 — Authentication',desc:'Does the solution offer, out of the box, a multi-factor authentication feature, in case integration with the Bank\'s IdP is not feasible?',row:7,aa:'4',qid:'SR4'},
+        {id:'p4-sr-005',label:'SR5 — Authentication',desc:'Does the solution allow for preventing the "save the password" (or "remember my password") feature of the web browsers, when users logon to the web interface? If desktop clients are included in the solution that offer and "save password" feature, is it possible to centrally configure the retention policy?',row:8,aa:'5',qid:'SR5'},
+        {id:'p4-sr-006',label:'SR6 — Authentication',desc:'Can the solution integrate with Azure Entra ID (or other similar services), for the purpose of authenticating internal and external users?',row:9,aa:'6',qid:'SR6'},
+        {id:'p4-sr-007',label:'SR7 — Authentication',desc:'Is Single Sign-On (SSO) supported for authenticating inbound user access in this solution?',row:10,aa:'7',qid:'SR7'},
+        {id:'p4-sr-008',label:'SR8 — Authorization',desc:'Is the solution designed so that, all requests, whether external (user to UI) or internal (system-to-system and/or between backend services), are authorized?',row:11,aa:'8',qid:'SR8'},
+        {id:'p4-sr-009',label:'SR9 — Authorization',desc:'Does the solution allow for granting only the absolutely necessary privileges to each user, according to their role and the Principle of Least Privilege?\n\nIs it enforced that a user is not assigned multiple roles and/or contradicting rights?',row:12,aa:'9',qid:'SR9'},
+        {id:'p4-sr-010',label:'SR10 — Authorization',desc:'Does the solution offer the ability of providing access to data stored on the database parametarised stored procedures, so that only legitimate actions are being performed on the database tables?',row:13,aa:'10',qid:'SR10'},
+        {id:'p4-sr-011',label:'SR11 — Authorization',desc:'Does the proposed solution offer a web based API for the configuration of users\' roles by an Identity Management System (IDM)?',row:14,aa:'11',qid:'SR11'},
+        {id:'p4-sr-012',label:'SR12 — Authorization',desc:'Can the solution assign roles and access rights to end users, by integrating with Active Directory (security groups)?',row:15,aa:'12',qid:'SR12'},
+        {id:'p4-sr-013',label:'SR13 — Authorization',desc:'Does the solution support Role-based Access Control?',row:16,aa:'13',qid:'SR13'},
+        {id:'p4-sr-014',label:'SR14 — Confidentiality',desc:'Does the solution store sensitive data and Personally Identifiable Information (PII) in a way that the data cannot be accessed by unauthorized users? Is access to data provided using an application layer which implements authentication, authorization, logging and auditing?',row:17,aa:'14',qid:'SR14'},
+        {id:'p4-sr-015',label:'SR15 — Confidentiality',desc:'Does the solution manage temporary files in a secure manner and follow best practices, such as naming convention (randomized or obfuscated name), access control (prevent unauthorised access), secure cleanup, restrict indexing, refrain from storing sensitive information?',row:18,aa:'15',qid:'SR15'},
+        {id:'p4-sr-016',label:'SR16 — Confidentiality',desc:'Does the solution support the encryption of sensitive data at Rest (encryption of data and encryption keys management according to encryption best practices)?',row:19,aa:'16',qid:'SR16'},
+        {id:'p4-sr-017',label:'SR17 — Confidentiality',desc:'Does the solution support the encryption of sensitive data in Transit (encryption of data and usage of encrypted connections such as HTTPS, SSL, TLS, sFTP,VPN, etc.)?',row:20,aa:'17',qid:'SR17'},
+        {id:'p4-sr-018',label:'SR18 — Confidentiality',desc:'Does the solution ensure the ability to display personal data in a masked form, based on the clearance level of the user accessing the information?',row:21,aa:'18',qid:'SR18'},
+        {id:'p4-sr-019',label:'SR19 — Generic',desc:'Are the vendor\'s services certified in terms of security standard ISO 27001? Does the proposed solution follow best practices such as OWASP, NIST, etc.?',row:22,aa:'19',qid:'SR19'},
+        {id:'p4-sr-020',label:'SR20 — Generic',desc:'Does the vendor have procedures for providing security fixes in a timely manner?',row:23,aa:'20',qid:'SR20'},
+        {id:'p4-sr-021',label:'SR21 — Generic',desc:'Has an idle user session timeout been factored into the design of the application and is it configurable?',row:24,aa:'21',qid:'SR21'},
+        {id:'p4-sr-022',label:'SR22 — Generic',desc:'Does the solution support using a web proxy service for accessing external (Internet) resources?',row:25,aa:'22',qid:'SR22'},
+        {id:'p4-sr-023',label:'SR23 — Generic',desc:'Does the solution allow for disabling unnecessary components and/or network services, in order to reduce the attack surface?',row:26,aa:'23',qid:'SR23'},
+        {id:'p4-sr-024',label:'SR24 — Generic',desc:'Has the vendor provided a comprehensive architectural diagram for the proposed cybersecurity solution that clearly illustrates all connections, components, and relevant protocols involved?',row:27,aa:'24',qid:'SR24'},
+        {id:'p4-sr-025',label:'SR25 — Generic',desc:'Does the solution implement a 3-layer architecture that separates different components of the application logically, avoiding a monolithic design?',row:28,aa:'25',qid:'SR25'},
+        {id:'p4-sr-026',label:'SR26 — Generic',desc:'In the context of the solution providing a native mobile application, can MDM (Mobile Device Management) and/or MAM (Mobile Application Management) policies be effectively enforced? Specifically, does the solution support techniques such as wrapping the application or utilizing MAM APIs to ensure compliance with security and management requirements?',row:29,aa:'26',qid:'SR26'},
+        {id:'p4-sr-027',label:'SR27 — Generic',desc:'Does the solution necessitate elevated privileges for its operation? Specifically, does it require execution within a superuser context (such as root or administrator accounts), or does it demand administrative access to databases? Please detail any specific permissions or privileges that must be granted for the solution to function effectively',row:30,aa:'27',qid:'SR27'},
+        {id:'p4-sr-028',label:'SR28 — Generic',desc:'Does the system hide information regarding the technology stack in use, either under normal or anomalous/exceptional or error conditions? Please describe what techniques or mechanisms are employed to conceal this information.',row:31,aa:'28',qid:'SR28'},
+        {id:'p4-sr-029',label:'SR29 — Generic',desc:'Does the system ensure that for each logged-in user, only a single user session will be active at any given time? What specific mechanisms or protocols are in place to monitor and manage user sessions.',row:32,aa:'29',qid:'SR29'},
+        {id:'p4-sr-030',label:'SR30 — Generic',desc:'Does the solution implement an n-Tier architecture with a minimum of three distinct tiers, such as presentation, application, and data storage layers? If so, how are these tiers separated in terms of functionality and security?',row:33,aa:'30',qid:'SR30'},
+        {id:'p4-sr-031',label:'SR31 — Generic',desc:'If the proposed solution is intended for use by multiple companies within the Group, how does it support multitenancy? Specifically, what mechanisms are implemented to ensure that each tenant’s data and resources are securely isolated while still sharing the same underlying infrastructure?',row:34,aa:'31',qid:'SR31'},
+        {id:'p4-sr-032',label:'SR32 — Integrity',desc:'Does the solution ensure that important and critical data remains unaltered during transmission, both intentionally and unintentionally? What specific protocols or encryption methods are employed to protect data integrity throughout the transmission process?',row:35,aa:'32',qid:'SR32'},
+        {id:'p4-sr-033',label:'SR33 — Integrity',desc:'Does the solution ensure that all inputs are verified and validated to prevent security vulnerabilities?',row:36,aa:'33',qid:'SR33'},
+        {id:'p4-sr-034',label:'SR34 — Integrity',desc:'Can the solution perform input validation for uploaded files (the file type is expected, the file does not exceed a predefined maximum size and does not contain threats such as viruses, malicious code)?',row:37,aa:'34',qid:'SR34'},
+        {id:'p4-sr-035',label:'SR35 — Logging & Auditing',desc:'Does the solution ensure that historical records (logs) are maintained securely and protected against tampering?',row:38,aa:'35',qid:'SR35'},
+        {id:'p4-sr-036',label:'SR36 — Non-repudiation',desc:'Does the solution ensure that for critical and/or important transactions, there is verifiable proof of the action taken, along with guarantees regarding the integrity and origin of the data, as well as authenticating the identity of the sender?',row:39,aa:'36',qid:'SR36'},
+        {id:'p4-sr-037',label:'SR37 — Additional Question',desc:'Does the solution employ data masking or tokenization for sensitive data?',row:40,aa:'37',qid:'SR37'},
+        {id:'p4-sr-038',label:'SR38 — Additional Question',desc:'Are APIs secured with OAuth tokens, API keys, rate-limiting, etc. to prevent unauthorized access and abuse? Are best practices for API security followed? Please describe.',row:41,aa:'38',qid:'SR38'},
+        {id:'p4-sr-039',label:'SR39 — Additional Question',desc:'Does the solution comply with GDPR?',row:42,aa:'39',qid:'SR39'},
+        {id:'p4-sr-040',label:'SR40 — Additional Question',desc:'Does the solution follows and comply with PCI DSS, DORA, CIS, NIST, etc.?',row:43,aa:'40',qid:'SR40'},
+        {id:'p4-sr-041',label:'SR41 — Additional Question',desc:'Does the solution follows the security controls that are related to the Cloud Provider & Cloud Service? Please answer all the questions that are included in a separate Excel File (Cloud Provider & Cloud Service - Questions for Answer).',row:44,aa:'40',qid:'SR41'},
+        {id:'p4-sr-042',label:'SR42 — Additional Question',desc:'Does the solution follows the cloud security baselines and best practices in each case (e.g. Microsoft cloud security benchmark, Well Architected Framework, AWS Security Best Practices, GCP Security Best Practices, etc.)?',row:45,aa:'41',qid:'SR42'},
       ]},
-      {id:'g-sr-cloud', title:'SR Questionnaire — Cloud Deployment (SR1–SR42, Cyber Questionnaire Cloud sheet)', num:'4.3', items:[
-        {id:'p4-sr-cl01', label:'SR1–SR42 (Cloud) — Same questions as On-Prem but for cloud deployment', desc:'All 42 SR questions must be answered again in context of the cloud deployment model. See Phase 4.2 for the full question list. Ensure a cloud-specific response is given for each.', hint:'Cloud/SaaS responses may differ from on-prem answers — complete separately'},
+      {id:'g-cs', title:'Cloud Service Questionnaire — CS1 to CS74 (73 questions, Cloud Service sheet)', num:'4.3', sheet:'Cloud Service', items:[
+        {id:'p4-cs-002',label:'CS2',desc:'Is data collected, processed, or managed through this service outside EEC zone?',row:2,aa:'1',qid:'CS2'},
+        {id:'p4-cs-003',label:'CS3',desc:'Is the system accessible from external networks/Internet? Please provide details in the comments area.',row:3,aa:'2',qid:'CS3'},
+        {id:'p4-cs-004',label:'CS4',desc:'Has a high-level architecture for the solution been defined? If yes, please provide the related documentation.',row:4,aa:'3',qid:'CS4'},
+        {id:'p4-cs-005',label:'CS5',desc:'Is https encryption used for all client-server connections? Please provide details in the comments area.',row:5,aa:'4',qid:'CS5'},
+        {id:'p4-cs-006',label:'CS6',desc:'Is encryption used for all connections between solution\'s components as well as with internal systems? Please provide details in the comments area.',row:6,aa:'5',qid:'CS6'},
+        {id:'p4-cs-007',label:'CS7',desc:'Is encryption used for all connections of the solution with third-party (external) systems? Please provide details in the comments area.',row:7,aa:'6',qid:'CS7'},
+        {id:'p4-cs-008',label:'CS8',desc:'Are HTTPS/SSL protocols deployed using the current acceptable international standard TLS v1.2 at minimum for the solution? Please provide details in the comments area.',row:8,aa:'7',qid:'CS8'},
+        {id:'p4-cs-009',label:'CS9',desc:'Are valid and trusted security certificates utilised from a legitimate public key certificate authority?',row:9,aa:'8',qid:'CS9'},
+        {id:'p4-cs-010',label:'CS10',desc:'Do you utilize a site-to-site VPN with IPSec protocol to create a secure tunnel for data to traverse an insecure network (e.g. customer\'s network to cloud environment, host to cloud environment)?',row:10,aa:'9',qid:'CS10'},
+        {id:'p4-cs-011',label:'CS11',desc:'Do you implement a wide area network (WAN) solution that allows a dedicated private connection (e.g. Azure ExpressRoute) between Bank\'s network and CSP’s own network?',row:11,aa:'10',qid:'CS11'},
+        {id:'p4-cs-012',label:'CS12',desc:'Do you configure firewalls to use separate network interfaces (with rules that prohibit specific traffic) or multiple virtual firewall instances that can be created for each network zone of the solution\'s components? Please provide details in the comments area.',row:12,aa:'11',qid:'CS12'},
+        {id:'p4-cs-013',label:'CS13',desc:'Do you implement virtual firewalls via the cloud management console (provided by the Cloud provider) or by using a third party vendor product?',row:13,aa:'12',qid:'CS13'},
+        {id:'p4-cs-014',label:'CS14',desc:'Do you deploy any web application firewalls-WAFs (e.g. MS Azure Web Application Firewall) in order to detect and block suspicious or malicious web application traffic (such as an SQL injection) target to the cloud service solution?',row:14,aa:'13',qid:'CS14'},
+        {id:'p4-cs-015',label:'CS15',desc:'Has a DDoS protection mechanism been configured for protecting the specific cloud service? Please provide details on the attack vectors in the comments area.',row:15,aa:'14',qid:'CS15'},
+        {id:'p4-cs-016',label:'CS16',desc:'For the solution, do you implement IAM via an existing on-premises solution by connecting the identity store (e.g. Active Directory) to the cloud environment through an access management standard (e.g. SAML v2.0, OAuth or OpenID)? Please provide details in the comments area.',row:16,aa:'15',qid:'CS16'},
+        {id:'p4-cs-017',label:'CS17',desc:'For the solution, do you implement IAM by creating a trust relationship between the on-premises identity store and the CSP identity store to enable synchronisation of user identities (users, groups and roles)? Please provide details on the trust relationship option (one-way trust with read-only given by the organisation toe the cloud identity service or two-way trust where identities are synchronised) in the comments area.',row:17,aa:'16',qid:'CS17'},
+        {id:'p4-cs-018',label:'CS18',desc:'For the solution, do you deploy an identity as a service (IDaaS) enabling user access to specified applications or resources (user authorization)? Please provide details in the comments area.',row:18,aa:'17',qid:'CS18'},
+        {id:'p4-cs-019',label:'CS19',desc:'Regarding IDaaS, do you implement a cloud-first policy with little or no on-premises identity store requirement?',row:19,aa:'18',qid:'CS19'},
+        {id:'p4-cs-020',label:'CS20',desc:'Regarding IDaaS, do you implement a Hybrid solution with the users being stored both on‑premises and in an IDaaS?',row:20,aa:'19',qid:'CS20'},
+        {id:'p4-cs-021',label:'CS21',desc:'For the solution, do you implement SSO using protocols and standards like Kerberos and SAML 2.0 in order to eliminate the reuse of user log-in details to access each cloud application?',row:21,aa:'20',qid:'CS21'},
+        {id:'p4-cs-022',label:'CS22',desc:'Is access to cloud service solution deployed with multi-factor authentication (MFA)? Please provide details in the comments area.',row:22,aa:'21',qid:'CS22'},
+        {id:'p4-cs-023',label:'CS23',desc:'Is a geolocation-based factor added as a form of authentication to take into account the physical location of the user? (e.g. restrict certain locations from being able to authenticate or block an attempted logon from an unrealistic location given where the user last logged off). Please provide details in the comments area, for example if ip address restriction is applied for the users authenticated only locally by the service.',row:23,aa:'22',qid:'CS23'},
+        {id:'p4-cs-024',label:'CS24',desc:'Does the cloud service solution support the creation of specific roles based on business needs in order to comply with the least privilege principle? Please provide details in the comments area.',row:24,aa:'23',qid:'CS24'},
+        {id:'p4-cs-025',label:'CS25',desc:'Does the cloud service solution support user access control based on assigned roles?',row:25,aa:'24',qid:'CS25'},
+        {id:'p4-cs-026',label:'CS26',desc:'Does the management interface of the cloud service support the four-eye principle for all critical functions?',row:26,aa:'25',qid:'CS26'},
+        {id:'p4-cs-027',label:'CS27',desc:'Has the cloud administrator assigned several of the lesser administrative responsibilities to different roles and administrators, applying the least privilege principle?',row:27,aa:'26',qid:'CS27'},
+        {id:'p4-cs-028',label:'CS28',desc:'Do you maintain an up-to-date inventory of cloud administrators with the privileges granted, the nature of their role and the date granted/removed? If yes, are regular checks (e.g. monthly) on this inventory performed?',row:28,aa:'27',qid:'CS28'},
+        {id:'p4-cs-029',label:'CS29',desc:'For the cloud service administrative actions has a privileged access management tool been deployed? This can include enforce multi-factor authentication, provide just-in-time privileged access to resources, provide notifications to specified individuals when privileged roles are activated, log activities performed when an administrator account is used.',row:29,aa:'28',qid:'CS29'},
+        {id:'p4-cs-030',label:'CS30',desc:'Are key administrator actions (i.e. successful login, multiple logins, failed attempts) to the cloud service been logged and regularly reviewed (e.g. weekly) for suspicious or malicious activity?',row:30,aa:'29',qid:'CS30'},
+        {id:'p4-cs-031',label:'CS31',desc:'Are choices available to cloud customers in terms of the locations and geographic regions of the data storage? Please provide details in the comments area.',row:31,aa:'30',qid:'CS31'},
+        {id:'p4-cs-032',label:'CS32',desc:'For the solution, are regular backups performed on data (including configuration settings) stored in the cloud environment in order to ensure data and systems can be restored within a critical timescale?',row:32,aa:'31',qid:'CS32'},
+        {id:'p4-cs-033',label:'CS33',desc:'Are all data belonging to Alpha Bank labelled (e.g. confidential, internal) in line with its assigned level of classification?',row:33,aa:'32',qid:'CS33'},
+        {id:'p4-cs-034',label:'CS34',desc:'Is cloud provider of the solution utilize encryption at-rest and in-transit (to and from cloud) for data belonging to Alpha Bank? Please provide details of the methods used in the comments area.',row:34,aa:'33',qid:'CS34'},
+        {id:'p4-cs-035',label:'CS35',desc:'In case encryption keys are utilized, can the customer manage what and how data is encrypted, determine how the keys are used and audit the usage of keys?',row:35,aa:'34',qid:'CS35'},
+        {id:'p4-cs-036',label:'CS36',desc:'Do you provide the capability to allow the creation of unique encryption keys per tenant of the cloud service solution?',row:36,aa:'35',qid:'CS36'},
+        {id:'p4-cs-037',label:'CS37',desc:'Can the customer store the keys within his own key management solution and grant access to the cloud environment via API requests? Please note that the cloud provider will only read the keys and never write them to storage or save the keys.',row:37,aa:'36',qid:'CS37'},
+        {id:'p4-cs-038',label:'CS38',desc:'In case CASB DLP functionality is enabled, does it provide coverage of data leaking through on-premises systems without connecting to an on-premises DLP tool?',row:38,aa:'37',qid:'CS38'},
+        {id:'p4-cs-039',label:'CS39',desc:'In case CASB DLP functionality is enabled, is it aligned with the on-premises DLP policy while notifying users of violations and blocking the unauthorised transfer or flow of sensitive data?',row:39,aa:'38',qid:'CS39'},
+        {id:'p4-cs-040',label:'CS40',desc:'Does the proposed solution separate Alpha Bank\' data from other customers (support of multitenancy)? Please provide details of procedures and technical measures in place for the segmentation in multi-tenant system architecture used in the comments area.',row:40,aa:'39',qid:'CS40'},
+        {id:'p4-cs-041',label:'CS41',desc:'Do you perform periodically vulnerability scanning on your cloud service environment of the solution?',row:41,aa:'40',qid:'CS41'},
+        {id:'p4-cs-042',label:'CS42',desc:'Do you perform periodically penetration tests on your cloud service environment of the solution?',row:42,aa:'41',qid:'CS42'},
+        {id:'p4-cs-043',label:'CS43',desc:'In case critical and high findings are detected during vulnerability scans and/or penetration tests, are these immediately mitigated (e.g. within 15 days)? Please provide details in the comments area and include in your response any available information/report that can be shared to customers under NDA.',row:43,aa:'42',qid:'CS43'},
+        {id:'p4-cs-044',label:'CS44',desc:'Can you obtain all the necessary approvals in order the customer to perform a penetration test of the provisioned cloud service?',row:44,aa:'43',qid:'CS44'},
+        {id:'p4-cs-045',label:'CS45',desc:'Do you perform code review to ensure that application of the cloud service is built accurately and without vulnerabilities? Please provide details in the comments area.',row:45,aa:'44',qid:'CS45'},
+        {id:'p4-cs-046',label:'CS46',desc:'Do you restrict, log, and monitor access to your information security management systems supporting the cloud service (e.g., hypervisors, firewalls, vulnerability scanners, network sniffers, APIs, etc.)?',row:46,aa:'45',qid:'CS46'},
+        {id:'p4-cs-047',label:'CS47',desc:'Do you monitor and log privileged access (e.g., administrator level) to information security management systems?',row:47,aa:'46',qid:'CS47'},
+        {id:'p4-cs-048',label:'CS48',desc:'Is the SIEM configured to investigate security events from cloud service logs and sending alerts for potential incidents?',row:48,aa:'47',qid:'CS48'},
+        {id:'p4-cs-049',label:'CS49',desc:'Have you created a cloud security incident management capability for the cloud environment of the solution comprised of skilled individuals as well as relevant tooling?',row:49,aa:'48',qid:'CS49'},
+        {id:'p4-cs-050',label:'CS50',desc:'Has the security orchestration and automated response tools (SOAR) been deployed to automate the incident management process for the specific cloud service?',row:50,aa:'49',qid:'CS50'},
+        {id:'p4-cs-051',label:'CS51',desc:'Are any security incident response simulations been conducted regularly in order to test the incident response plan?',row:51,aa:'50',qid:'CS51'},
+        {id:'p4-cs-052',label:'CS52',desc:'Have you experienced any security incident within the past two (2) years for the specific cloud service in scope?',row:52,aa:'51',qid:'CS52'},
+        {id:'p4-cs-053',label:'CS53',desc:'In case the solution offers a native mobile application, is it possible to enforce MDM/MAM policies (e.g. by wrapping, use of MAM APIs)?',row:53,aa:'52',qid:'CS53'},
+        {id:'p4-cs-054',label:'CS54',desc:'In case the solution offers a native mobile application, does the application use certificate pinning techniques?',row:54,aa:'53',qid:'CS54'},
+        {id:'p4-cs-055',label:'CS55',desc:'In case the solution offers a native mobile application, is the application prevented from running on a jailbroken or rooted device?',row:55,aa:'54',qid:'CS55'},
+        {id:'p4-cs-056',label:'CS56',desc:'In case the solution offers a native mobile application, is the application operating with the minimal permissions (i.e. not administrative permissions) for required functionality and resources?',row:56,aa:'55',qid:'CS56'},
+        {id:'p4-cs-057',label:'CS57',desc:'In case the solution offers a native mobile application, is the underlying programming language protected with code obfuscation to act as a defend mechanism from maliciously uncovering the methodology behind security, encryption and data transfer practices?',row:57,aa:'56',qid:'CS57'},
+        {id:'p4-cs-058',label:'CS58',desc:'Is a formal Change Management procedure followed in order to integrate changes into the production environment of the cloud service?',row:58,aa:'57',qid:'CS58'},
+        {id:'p4-cs-059',label:'CS59',desc:'Does the solution limit the number of active concurrent sessions for a single authenticated user?',row:59,aa:'58',qid:'CS59'},
+        {id:'p4-cs-060',label:'CS60',desc:'Does the solution log automatically a user off, after a predefined period of inactivity?',row:60,aa:'59',qid:'CS60'},
+        {id:'p4-cs-061',label:'CS61',desc:'Is a notification send each time an application user with admin privileges is added or removed from the application of the solution?',row:61,aa:'60',qid:'CS61'},
+        {id:'p4-cs-062',label:'CS62',desc:'Does the solution offer a segregated interface for application\'s administrative tasks from simple users\' functionality? Please elaborate how the segregation is accomplished.',row:62,aa:'61',qid:'CS62'},
+        {id:'p4-cs-063',label:'CS63',desc:'Are application level security logs protected from unauthorised access and modification?',row:63,aa:'62',qid:'CS63'},
+        {id:'p4-cs-064',label:'CS64',desc:'In case of data uploading to the cloud service solution, are uploaded files validated to be of expected type (i.e. the first few bytes of a file that are unique to a particular file type) to prevent arbitrary content upload?',row:64,aa:'63',qid:'CS64'},
+        {id:'p4-cs-065',label:'CS65',desc:'In case of data uploading to the cloud service solution, is it ensured that all inputs are verified and validated (e.g. data type validation, range and constraint validation, code and cross-reference validation, structured validation)?',row:65,aa:'64',qid:'CS65'},
+        {id:'p4-cs-066',label:'CS66',desc:'In case of data uploading to the cloud service solution, are uploaded files scanned by antivirus scanners to prevent upload of known malicious content even zero-day attacks? Please provide details in the comments area.',row:66,aa:'65',qid:'CS66'},
+        {id:'p4-cs-067',label:'CS67',desc:'Does the solution have the ability to mask displayed sensitive data according to the clearance level of the end user?',row:67,aa:'66',qid:'CS67'},
+        {id:'p4-cs-068',label:'CS68',desc:'Does the solution support High Availability? What type of High Availability solutions is implemented (e.g. Active-Active, Active-Cold Standby)?',row:68,aa:'67',qid:'CS68'},
+        {id:'p4-cs-069',label:'CS69',desc:'Do you provide a disaster recovery capability for the cloud service?',row:69,aa:'68',qid:'CS69'},
+        {id:'p4-cs-070',label:'CS70',desc:'Do you provide a tenant-triggered failover option for the cloud service?',row:70,aa:'69',qid:'CS70'},
+        {id:'p4-cs-071',label:'CS71',desc:'Upon completion of the business relationship or discontinuation of the service for any reason, how customer\'s data would be safely returned from the solution? Please provide details in the comments area.',row:71,aa:'70',qid:'CS71'},
+        {id:'p4-cs-072',label:'CS72',desc:'Is unstructured customer data hosted in the cloud service available upon request in an industry-standard format (e.g., .doc, .xls, or .pdf)?',row:72,aa:'71',qid:'CS72'},
+        {id:'p4-cs-073',label:'CS73',desc:'Are there procedures for secure disposal (permanently deletion) of customer information that are followed upon completion of the business relationship or discontinuation of the service for any reason? Please provide details in the comments area.',row:73,aa:'72',qid:'CS73'},
+        {id:'p4-cs-074',label:'CS74',desc:'Αre there mechanisms (e.g. relative clauses in contractual agreement) implemented for the secure disposal of customer data on the cloud?',row:74,aa:'73',qid:'CS74'},
       ]},
-      {id:'g-cs', title:'Cloud Service Questionnaire — CS1 to CS73 (Cloud Service sheet)', num:'4.4', items:[
-        {id:'p4-cs-01', label:'CS1 — Data outside EEA zone?', desc:'Is data collected, processed or managed outside EEA zone?'},
-        {id:'p4-cs-02', label:'CS2–CS3 — External access & architecture', desc:'Is system accessible from external networks/internet? Has high-level architecture been defined and documented?'},
-        {id:'p4-cs-03', label:'CS4–CS9 — Encryption protocols', desc:'HTTPS for all client-server connections. Encryption between solution components, with internal systems, with 3rd-party systems. TLS 1.2 minimum. Valid certificates from legitimate CA. Site-to-site VPN with IPSec?'},
-        {id:'p4-cs-04', label:'CS10–CS14 — Network security', desc:'Dedicated private WAN connection (Azure ExpressRoute)? Firewalls with separate network interfaces or virtual instances per zone? WAF deployed? DDoS protection configured?'},
-        {id:'p4-cs-05', label:'CS15–CS20 — IAM & SSO for cloud', desc:'IAM via on-premises AD connected to cloud (SAML v2.0, OAuth, OpenID)? Trust relationship between on-prem and CSP identity stores? IDaaS? Cloud-first or hybrid identity? SSO (Kerberos/SAML 2.0)?'},
-        {id:'p4-cs-06', label:'CS21–CS22 — MFA & geolocation authentication', desc:'MFA deployed for cloud service access? Geolocation-based factor (IP restriction, location-based block)?'},
-        {id:'p4-cs-07', label:'CS23–CS29 — Cloud access control & admin', desc:'Role creation for least privilege. User access control by role. Four-eye principle for critical functions. Least privilege for cloud admins. Up-to-date admin inventory with regular checks. Privileged Access Management (PAM) tool. Key admin actions logged and reviewed.'},
-        {id:'p4-cs-08', label:'CS30–CS36 — Data storage, backup & encryption', desc:'Data storage location choices. Regular backups (including config settings). Alpha Bank data labelled by classification. Encryption at rest and in transit. Customer-managed encryption keys. Unique key per tenant. Customer key management with API access.'},
-        {id:'p4-cs-09', label:'CS37–CS39 — DLP & multi-tenancy', desc:'CASB DLP coverage for on-prem systems without on-prem DLP tool? DLP aligned with on-prem policy. Alpha Bank data separated from other customers (multi-tenancy)?'},
-        {id:'p4-cs-10', label:'CS40–CS45 — Vulnerability & pen testing', desc:'Periodic vulnerability scans. Periodic penetration tests. Critical/high findings mitigated within 15 days. Customer-approved pen tests possible. Code reviews performed. Privileged access to security management systems restricted, logged, monitored.'},
-        {id:'p4-cs-11', label:'CS47–CS51 — SIEM, SOAR & incident response', desc:'SIEM configured for cloud logs and alerts. Cloud security incident management capability (people + tooling). SOAR for automated incident response. Regular IR simulations. Any security incidents in past 2 years?'},
-        {id:'p4-cs-12', label:'CS52–CS56 — Mobile app security', desc:'MDM/MAM policy enforcement. Certificate pinning. Blocked on jailbroken/rooted devices. Minimal app permissions. Code obfuscation.'},
-        {id:'p4-cs-13', label:'CS57–CS61 — Change management & session controls', desc:'Formal change management for production. Concurrent session limits. Auto-logout on inactivity. Notification when admin user added/removed. Segregated admin interface.'},
-        {id:'p4-cs-14', label:'CS62–CS66 — Logging, file upload & data masking', desc:'App security logs protected from unauthorized access/modification. File type validation on upload. Input validation. Antivirus scanning of uploads. Data masking per user clearance.'},
-        {id:'p4-cs-15', label:'CS67–CS73 — HA, DR & data disposal', desc:'High Availability (Active-Active or Active-Cold Standby). Disaster Recovery capability. Tenant-triggered failover. Secure return of customer data on contract end. Industry-standard format for unstructured data. Secure disposal procedures and contractual mechanisms.'},
-      ]},
-      {id:'g-cp', title:'Cloud Provider Questionnaire — CP1 to CP123 (Cloud_ Provider sheet)', num:'4.5', items:[
-        {id:'p4-cp-01', label:'CP1–CP6 — Security risk assessment & governance', desc:'Formalized periodic security risk assessment process. Third-party/subcontractor risk monitoring. Risk treatment plans. Management-approved security policies. Exception handling process. Designated CISO.'},
-        {id:'p4-cp-02', label:'CP7–CP12 — Asset & data management', desc:'Automated asset inventory tool. Removable media policy. Formal data classification procedure. Data labelling (including customer data). Secure disposal policy. Electronic data wiping before asset reuse.'},
-        {id:'p4-cp-03', label:'CP13–CP20 — Data in transit, DLP & phishing prevention', desc:'Corporate data encrypted in transit outside and inside corporate network. Email phishing prevention. Malicious website detection/prevention. DLP procedure and technical solution. Controls for cloud file sharing. External sharing approval policy.'},
-        {id:'p4-cp-04', label:'CP21–CP30 — Encryption policy & key management', desc:'Management-approved encryption policy. Full-disk encryption on all systems. Database encryption. Key generation per industry standards. Keys encrypted at rest and in transit. Centralised KMS. Customer data encrypted at rest. Customer-managed keys option. AES 128-bit minimum (256-bit ideal). Data segmentation between tenants.'},
-        {id:'p4-cp-05', label:'CP31–CP34 — Security training & change management', desc:'Employee security awareness training. InfoSec approval required for changes. Changes (network/systems/app/code) subject to change control. Customer notification before impactful changes.'},
-        {id:'p4-cp-06', label:'CP35–CP40 — Capacity, redundancy & backup', desc:'Time synchronization. Monitoring for performance and capacity. Redundancy in multi-tenancy peak usage. Backups stored with equivalent security controls. Backup guidelines defined.'},
-        {id:'p4-cp-07', label:'CP40–CP50 — Access control policy & privileged accounts', desc:'Management-approved access control policy (incl. teleworking). Unique IDs for authentication. Service account inventory. Local accounts assigned to unique privileged users. Access approval process. Least privilege for apps/OS/DB/network. Password policy (length/complexity/expiry/lockout). User access review process. Terminated employee access removed within 24hrs.'},
-        {id:'p4-cp-08', label:'CP51–CP58 — Secure development', desc:'Formal security training for developers. Granular application logging. Session timeout (e.g. 20 min). Separated dev/test/staging from production. Developer access to production (including read-only)? Source code access controlled. Authorization for production data in test. Secure code reviews (OWASP Top 10).'},
-        {id:'p4-cp-09', label:'CP59–CP65 — Infrastructure & application security', desc:'Logical/physical segregation of web, app, and DB components. Security configuration standards. TLS 1.2/1.3 for all HTTP traffic. WAF deployed. Controlled application/system changes. Security requirements from start of development (DevSecOps). Acceptance tests including security compliance checks.'},
-        {id:'p4-cp-10', label:'CP66–CP74 — Incident management & monitoring', desc:'Established security incident management procedure. 24x7x365 Incident Response team. Customer-specific notification in IR Plan (incl. personal data breaches). Physical asset loss/theft procedures. SIEM for log correlation. Malware activity alerts. Incident registry. Privacy incident reporting process. Security incidents in past 2 years?'},
-        {id:'p4-cp-11', label:'CP75–CP81 — Security certifications', desc:'SOC 2 audit within last 12 months (provide report). ISO 27001 assessment and current certification (provide scope). Cyber/data breach insurance. Secure non-cleartext network protocols. PCI DSS current certification. Subcontractors also PCI DSS certified?'},
-        {id:'p4-cp-12', label:'CP82–CP92 — Endpoint & network security', desc:'End user device security configuration standards. Remote access/file sharing require auth + encryption. Screen lock on inactivity. Monthly high-risk patches on endpoints. Mobile device security enforcement (PIN, encryption, remote wipe). Anti-malware and zero-day detection on all endpoints. Network device security standards (firewalls, switches, routers, WAPs). Network device log protection. Priority patching for high-risk systems. Network/security tech (firewalls, IDS/IPS, WAF) enforcing security.'},
-        {id:'p4-cp-13', label:'CP93–CP102 — Remote access, multi-tenancy & DDoS', desc:'Remote access policy. MFA for remote network connections. MFA for admin system access. Encrypted remote access. Security tech events sent to central SIEM. Controls preventing cross-customer compromise in pooled environments. DDoS resilience mechanisms.'},
-        {id:'p4-cp-14', label:'CP103–CP112 — Anti-malware, vulnerability & patch management', desc:'Anti-malware policy (no disabling without security approval). Application allowlisting/blocklisting. All vulnerability scan/pen test findings tracked to remediation. Periodic scans/tests (and after significant changes). Detailed system/app logs for incident investigation. Log retention min 1 year. Logs protected and stored on alternate systems (SIEM). Regular patching with documented exceptions. Priority patching for high-risk. No unsupported OS/DB/app components (or document if so).'},
-        {id:'p4-cp-15', label:'CP113–CP123 — Containers, cloud hosting & third-party audits', desc:'Containers (Docker/K8s/OpenShift) used for corporate data? Customer ability to prohibit containers. Cloud Hosting Provider recent SOC2 report. Cloud Hosting Provider ISO27001 certified. Network segmentation + Firewall/IPS/IDS/WAF/DAM in cloud. Cloud provider IAM and least privilege. Roles/responsibilities agreed (shared responsibility model). Data management techniques (backup, classification, deletion, CASB DLP). Secure cloud config (gold images, secure APIs, containerisation). Ongoing security (vuln management, SIEM, incident management). Regular third-party security audits.'},
+      {id:'g-cp', title:'Cloud Provider Questionnaire — CP1 to CP123 (123 questions, Cloud Provider sheet)', num:'4.4', sheet:'Cloud Provider', items:[
+        {id:'p4-cp-001',label:'CP1',desc:'Is there a formalized security risk assessment process that periodically evaluates internal controls based on security policies, procedures and standards, to identify key risks?',row:2,aa:'1',qid:'CP1'},
+        {id:'p4-cp-002',label:'CP2',desc:'Does the security risk assessment process address ongoing monitoring and reviewing of third-party (including subcontractors) risk?',row:3,aa:'2',qid:'CP2'},
+        {id:'p4-cp-003',label:'CP3',desc:'After completion of the security risk assessment process, are the associated risks identified and the corrective actions established in a treatment plan?',row:4,aa:'3',qid:'CP3'},
+        {id:'p4-cp-004',label:'CP4',desc:'Is there a set of information security policies that have been approved by management, communicated to employees and periodically reviewed?',row:5,aa:'4',qid:'CP4'},
+        {id:'p4-cp-005',label:'CP5',desc:'Is there a management-approved process for handling security deviations and exceptions?',row:6,aa:'5',qid:'CP5'},
+        {id:'p4-cp-006',label:'CP6',desc:'Has a qualified individual responsible been designated as a Chief Information Security Officer (CISO) to oversee and implement the organization\'s security program and enforce its security policy?',row:7,aa:'6',qid:'CP6'},
+        {id:'p4-cp-007',label:'CP7',desc:'Is an automated asset inventory discovery tool used to inventory devices on the network, with the most recent IP address documented?',row:8,aa:'7',qid:'CP7'},
+        {id:'p4-cp-008',label:'CP8',desc:'Does the policy or procedure for information handling include removable media\'s (usb, thumb drives, DVDs, etc.) security requirements?',row:9,aa:'8',qid:'CP8'},
+        {id:'p4-cp-009',label:'CP9',desc:'Has the vendor a formal data classification procedure, so as to categorize the different data types?',row:10,aa:'9',qid:'CP9'},
+        {id:'p4-cp-010',label:'CP10',desc:'Is part of the data classification process the labelling of data and data storage repositories (including data the belong to customers)?',row:11,aa:'10',qid:'CP10'},
+        {id:'p4-cp-011',label:'CP11',desc:'Are policies and procedures maintained for secure disposal of customer information?',row:12,aa:'11',qid:'CP11'},
+        {id:'p4-cp-012',label:'CP12',desc:'In case data is in electronic form, is all corporate data made unrecoverable (wiped or overwritten) prior to asset reuse?',row:13,aa:'12',qid:'CP12'},
+        {id:'p4-cp-013',label:'CP13',desc:'In case data is in electronic form, is all corporate data sent or received electronically encrypted in transit while outside the corporate network?',row:14,aa:'13',qid:'CP13'},
+        {id:'p4-cp-014',label:'CP14',desc:'In case data is in electronic form, is all corporate data sent or received electronically encrypted in transit within the corporate network?',row:15,aa:'14',qid:'CP14'},
+        {id:'p4-cp-015',label:'CP15',desc:'Do scans performed on incoming and outgoing email include phishing prevention?',row:16,aa:'15',qid:'CP15'},
+        {id:'p4-cp-016',label:'CP16',desc:'Are there mechanisms to detect and prevent known or potential malicious websites?',row:17,aa:'16',qid:'CP16'},
+        {id:'p4-cp-017',label:'CP17',desc:'Has your company implemented a data loss prevention (DLP) procedure? Please provide details in the comments area.',row:18,aa:'17',qid:'CP17'},
+        {id:'p4-cp-018',label:'CP18',desc:'Has your company implemented a data loss prevention (DLP) security solution? Please provide details in the comments area (like whether a central mechanism is implemented in combination with an endpoint solution).',row:19,aa:'18',qid:'CP18'},
+        {id:'p4-cp-019',label:'CP19',desc:'Are there controls in place to ensure that sensitive data is not leaked/breached via cloud-based public file sharing solution(s)? If yes, please describe the controls used in the comments area.',row:20,aa:'19',qid:'CP19'},
+        {id:'p4-cp-020',label:'CP20',desc:'Are users prohibited by policy from granting public file sharing access to external parties without management approval? If no, please explain in the comments area.',row:21,aa:'20',qid:'CP20'},
+        {id:'p4-cp-021',label:'CP21',desc:'Is there an established policy and procedure for encrypting data that has been approved by management, communicated to appropriate stakeholders and an owner to maintain and review them? If yes, please describe basic cryptographic measures, key management and key protection in the comments area.',row:22,aa:'21',qid:'CP21'},
+        {id:'p4-cp-022',label:'CP22',desc:'Is full-disk encryption enabled for all systems that store or process corporate data? Please provide details in the comments area.',row:23,aa:'22',qid:'CP22'},
+        {id:'p4-cp-023',label:'CP23',desc:'Does regulated or confidential corporate data stored in a database include database encryption? Please provide details in the comments area.',row:24,aa:'23',qid:'CP23'},
+        {id:'p4-cp-024',label:'CP24',desc:'Are encryption keys generated in a manner consistent with key management industry standards? Please provide details in the comments area.',row:25,aa:'24',qid:'CP24'},
+        {id:'p4-cp-025',label:'CP25',desc:'Are encryption keys encrypted at rest and during transmission? Please provide details in the comments area.',row:26,aa:'25',qid:'CP25'},
+        {id:'p4-cp-026',label:'CP26',desc:'Is there a centralized key management system (KMS)?',row:27,aa:'26',qid:'CP26'},
+        {id:'p4-cp-027',label:'CP27',desc:'Are customer data at rest stored encrypted?',row:28,aa:'27',qid:'CP27'},
+        {id:'p4-cp-028',label:'CP28',desc:'Is there an option for customers to manage their own encryption keys? Please provide details in the comments area.',row:29,aa:'28',qid:'CP28'},
+        {id:'p4-cp-029',label:'CP29',desc:'Does Symmetric encryption use AES with a key length of at least 128 bits (256 bits ideally)? Please provide details in the comments area.',row:30,aa:'29',qid:'CP29'},
+        {id:'p4-cp-030',label:'CP30',desc:'Is data segmentation and separation capability provided between customers/tenants?',row:31,aa:'30',qid:'CP30'},
+        {id:'p4-cp-031',label:'CP31',desc:'Are employees required to attend security awareness training?',row:32,aa:'31',qid:'CP31'},
+        {id:'p4-cp-032',label:'CP32',desc:'Does the operational change management/change control policy or program require Information security department\'s approval, prior to implementing changes (reviewing for potential security impact)?',row:33,aa:'32',qid:'CP32'},
+        {id:'p4-cp-033',label:'CP33',desc:'Do changes to the production environment include network, systems, application updates, and code changes subject to the change control process with the creation of a relevant record?',row:34,aa:'33',qid:'CP33'},
+        {id:'p4-cp-034',label:'CP34',desc:'Does the change control process include a formal process to ensure that customers are notified prior to changes being made which may impact their service?',row:35,aa:'34',qid:'CP34'},
+        {id:'p4-cp-035',label:'CP35',desc:'Do systems and network devices utilize a common time synchronization service?',row:36,aa:'35',qid:'CP35'},
+        {id:'p4-cp-036',label:'CP36',desc:'Have adequate monitoring procedures for systems been established to coordinate the efficient use of resources and effectively assess future performance and capacity requirements?',row:37,aa:'36',qid:'CP36'},
+        {id:'p4-cp-037',label:'CP37',desc:'Is there a sufficient redundancy capacity to ensure that services are not impacted in multi-tenancy environments during peak usage and above?',row:38,aa:'37',qid:'CP37'},
+        {id:'p4-cp-038',label:'CP38',desc:'Are backups containing corporate data stored in an environment where the security controls protecting them are equivalent to production environment security controls?',row:39,aa:'38',qid:'CP38'},
+        {id:'p4-cp-039',label:'CP39',desc:'Have appropriate guidelines for back up been defined?',row:40,aa:'39',qid:'CP39'},
+        {id:'p4-cp-040',label:'CP40',desc:'Is there an established access control policy that has been approved by management, communicated to appropriate stakeholders and an owner to maintain and review the policy? Please note that teleworking should also be incorporated in the policy.',row:41,aa:'40',qid:'CP40'},
+        {id:'p4-cp-041',label:'CP41',desc:'Are unique IDs required for authentication to applications, operating systems, databases and network devices?',row:42,aa:'41',qid:'CP41'},
+        {id:'p4-cp-042',label:'CP42',desc:'Are IDs, used by services, inventoried and only used for stated purposes?',row:43,aa:'42',qid:'CP42'},
+        {id:'p4-cp-043',label:'CP43',desc:'In case local accounts exist, are they assigned to unique privileged users?',row:44,aa:'43',qid:'CP43'},
+        {id:'p4-cp-044',label:'CP44',desc:'Is there a process to request and receive approval for access to systems that transmit, process or store corporate systems and data?',row:45,aa:'44',qid:'CP44'},
+        {id:'p4-cp-045',label:'CP45',desc:'Is access to applications, operating systems, databases, and network devices provisioned according to the principle of least privilege?',row:46,aa:'45',qid:'CP45'},
+        {id:'p4-cp-046',label:'CP46',desc:'Does the password policy define specific security requirement by at least setting length, complexity, expiration and minimum age for passwords?',row:47,aa:'46',qid:'CP46'},
+        {id:'p4-cp-047',label:'CP47',desc:'Is there an official procedure to manage and control the password issuance?',row:48,aa:'47',qid:'CP47'},
+        {id:'p4-cp-048',label:'CP48',desc:'Does the password policy require system configuration to lock an account when a defined number of invalid login attempts are performed?',row:49,aa:'48',qid:'CP48'},
+        {id:'p4-cp-049',label:'CP49',desc:'Is there a process for regularly reviewing all users\' access (simple users, remote users and privileged users)?',row:50,aa:'49',qid:'CP49'},
+        {id:'p4-cp-050',label:'CP50',desc:'Does electronic access to systems require that corporate data should be removed within 24 hours for terminated employees and ensure that all corporate assets are returned?',row:51,aa:'50',qid:'CP50'},
+        {id:'p4-cp-051',label:'CP51',desc:'Is there a formal software security training for developers?',row:52,aa:'51',qid:'CP51'},
+        {id:'p4-cp-052',label:'CP52',desc:'Do applications provide granular and comprehensive logging?',row:53,aa:'52',qid:'CP52'},
+        {id:'p4-cp-053',label:'CP53',desc:'Are application sessions set to time out within a defined period (e.g. 20 minutes)?',row:54,aa:'53',qid:'CP53'},
+        {id:'p4-cp-054',label:'CP54',desc:'Are development, test, and staging environment separated from the production environment logically?',row:55,aa:'54',qid:'CP54'},
+        {id:'p4-cp-055',label:'CP55',desc:'Are developers permitted to access production environments, including read only access?',row:56,aa:'55',qid:'CP55'},
+        {id:'p4-cp-056',label:'CP56',desc:'Is access to the source code of the applications limited and controlled?',row:57,aa:'56',qid:'CP56'},
+        {id:'p4-cp-057',label:'CP57',desc:'Is authorization required when production data is copied to the test environment?',row:58,aa:'57',qid:'CP57'},
+        {id:'p4-cp-058',label:'CP58',desc:'Do secure code reviews include regular analysis of vulnerability to recent attacks, testing against common code vulnerabilities and validation checks for the most critical web application security flaws (e.g., OWASP Top 10 vulnerabilities)?',row:59,aa:'58',qid:'CP58'},
+        {id:'p4-cp-059',label:'CP59',desc:'Do you have logical or physical segregation between web, application and database components?',row:60,aa:'59',qid:'CP59'},
+        {id:'p4-cp-060',label:'CP60',desc:'Are security configuration standards applied for all parts of the application and the underlying system infrastructure (e.g. Operating system, database)? Please note that all unnecessary/unused services should be uninstalled or disabled, as well as default passwords removed, disabled or changed prior to placing any device or system into production.',row:61,aa:'60',qid:'CP60'},
+        {id:'p4-cp-061',label:'CP61',desc:'Are either TLS 1.2 or 1.3 used for encrypting all http traffic?',row:62,aa:'61',qid:'CP61'},
+        {id:'p4-cp-062',label:'CP62',desc:'Is a Web Application Firewall (WAF) deployed for web servers protection?',row:63,aa:'62',qid:'CP62'},
+        {id:'p4-cp-063',label:'CP63',desc:'Are changes (including emergency change) to the applications and systems controlled, to avoid negative effects?',row:64,aa:'63',qid:'CP63'},
+        {id:'p4-cp-064',label:'CP64',desc:'Does the development of applications incorporate security requirements and checks from the beginning and throughout the software production?',row:65,aa:'64',qid:'CP64'},
+        {id:'p4-cp-065',label:'CP65',desc:'Are there acceptance tests on application and systems that include compliance checks with security requirements?',row:66,aa:'65',qid:'CP65'},
+        {id:'p4-cp-066',label:'CP66',desc:'Is there an established security incident management procedure that has been approved by management, communicated to appropriate stakeholders and an owner to maintain and review the procedure?',row:67,aa:'66',qid:'CP66'},
+        {id:'p4-cp-067',label:'CP67',desc:'Is an Incident / Event Response team available 24x7x365?',row:68,aa:'67',qid:'CP67'},
+        {id:'p4-cp-068',label:'CP68',desc:'Do the Incident Response Plan notification procedures include customer/client-specific notification requirements (e.g. including personal data breaches)?',row:69,aa:'68',qid:'CP68'},
+        {id:'p4-cp-069',label:'CP69',desc:'Does the Incident Response Plan include physical asset loss or theft incident procedures?',row:70,aa:'69',qid:'CP69'},
+        {id:'p4-cp-070',label:'CP70',desc:'Is there an automated system to review and correlate log and/or behavioural events (e.g., SIEM)?',row:71,aa:'70',qid:'CP70'},
+        {id:'p4-cp-071',label:'CP71',desc:'Does regular security monitoring include malware activity alerts such as uncleaned infections and suspicious activity?',row:72,aa:'71',qid:'CP71'},
+        {id:'p4-cp-072',label:'CP72',desc:'Is there a registry of security incidents?',row:73,aa:'72',qid:'CP72'},
+        {id:'p4-cp-073',label:'CP73',desc:'Is there a process in place to identify and report privacy incidents including notification to external authorities where required?',row:74,aa:'73',qid:'CP73'},
+        {id:'p4-cp-074',label:'CP74',desc:'Are there cases of security incidents which have been observed during the past two (2) years, including personal data breaches?',row:75,aa:'74',qid:'CP74'},
+        {id:'p4-cp-075',label:'CP75',desc:'Has a SOC 2 audit been performed within the last 12 months? Please include in your response (e.g. via email or a separate link customer accessible for download) the latest report.',row:76,aa:'75',qid:'CP75'},
+        {id:'p4-cp-076',label:'CP76',desc:'Has an ISO 27001 control assessment been performed within the last 12 months? Please include in your response (e.g. via email or a separate link customer accessible for download) the certification',row:77,aa:'76',qid:'CP76'},
+        {id:'p4-cp-077',label:'CP77',desc:'Is a current certification for ISO 27001 maintained? Please provide the scope in the comments area.',row:78,aa:'77',qid:'CP77'},
+        {id:'p4-cp-078',label:'CP78',desc:'Does your organization obtain Cyber/data breach insurance for coverage in the event of large and small scale data exposures?',row:79,aa:'78',qid:'CP78'},
+        {id:'p4-cp-079',label:'CP79',desc:'Do you utilize secure (e.g. non-clear text and authenticated) standardized network protocols for the import and export of data as well as for managing the service?',row:80,aa:'79',qid:'CP79'},
+        {id:'p4-cp-080',label:'CP80',desc:'Is a current certification for PCI DSS maintained?',row:81,aa:'80',qid:'CP80'},
+        {id:'p4-cp-081',label:'CP81',desc:'Is it ensured that outsourced services to a subcontractor / third party are also certified by PCI DSS?',row:82,aa:'81',qid:'CP81'},
+        {id:'p4-cp-082',label:'CP82',desc:'Are end user device security configuration standards documented and reviewed or updated periodically to detect any changes in environment, available security features and/or best practices?',row:83,aa:'82',qid:'CP82'},
+        {id:'p4-cp-083',label:'CP83',desc:'Are all remote access and file sharing services configured to require authentication and encryption on end user devices? Please provide details in the comments area.',row:84,aa:'83',qid:'CP83'},
+        {id:'p4-cp-084',label:'CP84',desc:'Are end user devices configured to lock screens after a predefined period of inactivity (e.g. 15 minutes)?',row:85,aa:'84',qid:'CP84'},
+        {id:'p4-cp-085',label:'CP85',desc:'Are all available high-risk security patches applied and verified at least monthly on all end-user devices?',row:86,aa:'85',qid:'CP85'},
+        {id:'p4-cp-086',label:'CP86',desc:'Is a technical solution in place to enforce mobile device security requirements (e.g., PIN, encryption, remote wipe, etc.)?',row:87,aa:'86',qid:'CP86'},
+        {id:'p4-cp-087',label:'CP87',desc:'Is there an updated anti-malware software that performs scanning on all endpoints (e.g. laptops, servers, desktops)?',row:88,aa:'87',qid:'CP87'},
+        {id:'p4-cp-088',label:'CP88',desc:'Is there an updated zero day detection software that performs scanning on all endpoints (e.g. laptops, servers, desktops)?',row:89,aa:'88',qid:'CP88'},
+        {id:'p4-cp-089',label:'CP89',desc:'Are security and hardening standards endorsed for network devices, including Firewalls, Switches, Routers and Wireless Access Points (baseline configuration, patching, passwords, access control) and reviewed periodically?',row:90,aa:'89',qid:'CP89'},
+        {id:'p4-cp-090',label:'CP90',desc:'Are network device logs relevant to supporting incident investigation protected against modification, deletion and/or inappropriate access and stored on alternate systems (e.g., SIEM, Syslog, Log Management Service)?',row:91,aa:'90',qid:'CP90'},
+        {id:'p4-cp-091',label:'CP91',desc:'Does network device patch management include priority patching of high-risk systems first?',row:92,aa:'91',qid:'CP91'},
+        {id:'p4-cp-092',label:'CP92',desc:'Are network and security technologies (e.g. firewalls, IDS/IPS, WAF) used to enforce security requirements and block unauthorized traffic between segregated systems and other networks and systems?',row:93,aa:'92',qid:'CP92'},
+        {id:'p4-cp-093',label:'CP93',desc:'Is there a policy and a process that define the requirements for remote access from external networks to corporate network that have been approved by management?',row:94,aa:'93',qid:'CP93'},
+        {id:'p4-cp-094',label:'CP94',desc:'Is a multi-factor authentication required for all remote network connections from external networks to networks containing corporate systems and data?',row:95,aa:'94',qid:'CP94'},
+        {id:'p4-cp-095',label:'CP95',desc:'Are third party support personnel granted remote network access only upon request, their activity is logged while active, and their access is removed upon completion of support?',row:96,aa:'95',qid:'CP95'},
+        {id:'p4-cp-096',label:'CP96',desc:'Is multi-factor authentication required for administrative system access (shell or UI)?',row:97,aa:'96',qid:'CP96'},
+        {id:'p4-cp-097',label:'CP97',desc:'Are encrypted communications required for all remote system access?',row:98,aa:'97',qid:'CP97'},
+        {id:'p4-cp-098',label:'CP98',desc:'Are network and security technologies(e.g. firewalls, IDS/IPS, WAF) events sent to a central logging system or SIEM?',row:99,aa:'98',qid:'CP98'},
+        {id:'p4-cp-099',label:'CP99',desc:'Are there controls to prevent one customer attempting to compromise another customer in a resource pooled environment?',row:100,aa:'99',qid:'CP99'},
+        {id:'p4-cp-100',label:'CP100',desc:'Are mechanisms implemented to achieve resilience requirements in normal and adverse situations such as Distributed Denial of Service (DDoS) attacks?',row:101,aa:'100',qid:'CP100'},
+        {id:'p4-cp-101',label:'CP101',desc:'Is there an updated anti-malware mechanism that performs scanning on files downloaded via internet and email from endpoints (e.g. laptops, servers, desktops)?',row:102,aa:'101',qid:'CP101'},
+        {id:'p4-cp-102',label:'CP102',desc:'Is there an updated anti-malware mechanism that performs scanning against zero-day attacks on files downloaded via internet and email from endpoints (e.g. laptops, servers, desktops)?',row:103,aa:'102',qid:'CP102'},
+        {id:'p4-cp-103',label:'CP103',desc:'Does the anti-malware policy or program prohibit disabling anti-malware with exceptions requiring security approval and re-enablement as soon as possible?',row:104,aa:'103',qid:'CP103'},
+        {id:'p4-cp-104',label:'CP104',desc:'Are Whitelisted and/or Blacklisted Applications documented and enforced?',row:105,aa:'104',qid:'CP104'},
+        {id:'p4-cp-105',label:'CP105',desc:'Are all findings of vulnerabilities scans and penetration test documented and tracked to remediation?',row:106,aa:'105',qid:'CP105'},
+        {id:'p4-cp-106',label:'CP106',desc:'Are vulnerability scans and penetration tests performed periodically or at least after every significant change?',row:107,aa:'106',qid:'CP106'},
+        {id:'p4-cp-107',label:'CP107',desc:'Is sufficient detail contained in all system components and application logs to support security incident investigations (at a minimum, successful and failed login attempts and changes to sensitive configuration settings and files)?',row:108,aa:'107',qid:'CP107'},
+        {id:'p4-cp-108',label:'CP108',desc:'Are operating system and application events relevant to supporting incident investigation retained for a minimum of one year?',row:109,aa:'108',qid:'CP108'},
+        {id:'p4-cp-109',label:'CP109',desc:'Are operating system and application logs relevant to supporting incident investigation protected against modification, deletion and/or inappropriate access and stored on alternate systems (e.g., SIEM, Syslog, Log Management Service)?',row:110,aa:'109',qid:'CP109'},
+        {id:'p4-cp-110',label:'CP110',desc:'Are all systems and applications patched regularly and necessary patching exceptions documented and approved?',row:111,aa:'110',qid:'CP110'},
+        {id:'p4-cp-111',label:'CP111',desc:'Are all available high-risk security patches applied and verified in priority for all systems and applications?',row:112,aa:'111',qid:'CP111'},
+        {id:'p4-cp-112',label:'CP112',desc:'Are there software versions of operating systems, databases and application components in use that no longer have patches released? If yes, please describe in the comments area.',row:113,aa:'112',qid:'CP112'},
+        {id:'p4-cp-113',label:'CP113',desc:'Are containers (e.g., Docker, Kubernetes, OpenShift) used to process or store corporate data?',row:114,aa:'113',qid:'CP113'},
+        {id:'p4-cp-114',label:'CP114',desc:'Can customers prohibit containers from being used on corporate systems with sensitive or confidential information?',row:115,aa:'114',qid:'CP114'},
+        {id:'p4-cp-115',label:'CP115',desc:'Does the Cloud Hosting Provider provide a recent (valid for a 12-month period) SOC2 independent audit report?',row:116,aa:'115',qid:'CP115'},
+        {id:'p4-cp-116',label:'CP116',desc:'Is the Cloud Hosting Provider ISO27001 certified (validity of certification for a 12-month period)?',row:117,aa:'116',qid:'CP116'},
+        {id:'p4-cp-117',label:'CP117',desc:'In case of cloud hosted services, is network segmentation enforced and security mechanisms like Firewalls, IPS / IDS, WAF and DAM been applied? Please provide details in the comments area.',row:118,aa:'117',qid:'CP117'},
+        {id:'p4-cp-118',label:'CP118',desc:'Does the Cloud Hosting Provider manage the cloud services effectively by using identity and access management solutions, applying role based access according to least privilege principle, implementing secure sign-on processes and restricting administrator access?',row:119,aa:'118',qid:'CP118'},
+        {id:'p4-cp-119',label:'CP119',desc:'Does the Cloud Hosting Provider have roles and responsibilities for protecting the cloud environment been agreed, including shared responsibilities between the CHP, the organisation itself and any relevant external suppliers?',row:120,aa:'119',qid:'CP119'},
+        {id:'p4-cp-120',label:'CP120',desc:'Is data processed by the Cloud Hosting Provider adequately protected by employing data management techniques (e.g. regular backup, classifying customer data, safe data deletion), encrypting sensitive data and employing data leakage prevention solution like CASB?',row:121,aa:'120',qid:'CP120'},
+        {id:'p4-cp-121',label:'CP121',desc:'Does the Cloud Hosting Provider configure cloud services securely by using standard builds (e.g. applying ‘gold standard’ images), deploying secure application programming interfaces and deploying virtualisation/containerisation techniques (e.g. secure virtual machines (VM), configuring containers securely)?',row:122,aa:'121',qid:'CP121'},
+        {id:'p4-cp-122',label:'CP122',desc:'Does the Cloud Hosting Provider ensure the ongoing secure use of cloud services by regularly performing vulnerability management, employing security event monitoring techniques and integrating with an appropriate security incident management process?',row:123,aa:'122',qid:'CP122'},
+        {id:'p4-cp-123',label:'CP123',desc:'Does the olution undergo regular third-party security audits to assess its security posture?',row:124,aa:'123',qid:'CP123'},
       ]}
     ]
   },
@@ -2104,7 +2392,7 @@ function buildItemIndex() {
           desc: item.desc || '',
           descNorm: (item.desc || '').toLowerCase().replace(/[^a-z0-9]/g, ''),
           phase: ph.label,
-          isCyber: grp.id === 'g-sr-onprem' || grp.id === 'g-sr-cloud' || grp.id === 'g-cs' || grp.id === 'g-cp' || grp.id === 'g-creq',
+          isCyber: grp.id === 'g-sr' || grp.id === 'g-cs' || grp.id === 'g-cp' || grp.id === 'g-creq',
         });
       });
     });
@@ -2114,63 +2402,24 @@ function buildItemIndex() {
 
 // ── Fuzzy match CSV row to tracker item ──
 function buildRangeMap() {
-  // Maps individual question IDs (CP1, CS5, SR3 etc.) to tracker item IDs
-  // based on the grouped ranges in the tracker data
+  // Derive question-ID -> item-ID map directly from PHASES data.
+  // Items populated by the rebuild carry a .qid field (SR1, CP1, CS1, etc.)
+  // for the cyber sheets. IT/Business sheets don't use qid-based matching
+  // (they use row-position matching in the sheet-aware importer).
   const map = {};
-  const rangePatterns = [
-    // CP ranges -> p4-cp-XX
-    { prefix:'CP', ranges:[[1,6,'p4-cp-01'],[7,12,'p4-cp-02'],[13,20,'p4-cp-03'],[21,30,'p4-cp-04'],
-      [31,34,'p4-cp-05'],[35,40,'p4-cp-06'],[40,50,'p4-cp-07'],[51,58,'p4-cp-08'],
-      [59,65,'p4-cp-09'],[66,74,'p4-cp-10'],[75,81,'p4-cp-11'],[82,92,'p4-cp-12'],
-      [93,102,'p4-cp-13'],[103,112,'p4-cp-14'],[113,123,'p4-cp-15']] },
-    // CS ranges -> p4-cs-XX
-    { prefix:'CS', ranges:[[1,1,'p4-cs-01'],[2,3,'p4-cs-02'],[4,9,'p4-cs-03'],[10,14,'p4-cs-04'],
-      [15,20,'p4-cs-05'],[21,22,'p4-cs-06'],[23,29,'p4-cs-07'],[30,36,'p4-cs-08'],
-      [37,39,'p4-cs-09'],[40,45,'p4-cs-10'],[47,51,'p4-cs-11'],[52,56,'p4-cs-12'],
-      [57,61,'p4-cs-13'],[62,66,'p4-cs-14'],[67,73,'p4-cs-15']] },
-    // SR ranges -> p4-sr-opXX (OnPrem) and p4-sr-clXX (Cloud) - same questions
-    { prefix:'SR', ranges:[[1,1,'p4-sr-op01'],[2,3,'p4-sr-op02'],[4,4,'p4-sr-op03'],
-      [5,5,'p4-sr-op04'],[6,6,'p4-sr-op05'],[7,7,'p4-sr-op06'],[8,8,'p4-sr-op07'],
-      [9,9,'p4-sr-op08'],[10,10,'p4-sr-op09'],[11,11,'p4-sr-op10'],[12,12,'p4-sr-op11'],
-      [13,13,'p4-sr-op12'],[14,14,'p4-sr-op13'],[15,15,'p4-sr-op14'],[16,16,'p4-sr-op15'],
-      [17,17,'p4-sr-op16'],[18,18,'p4-sr-op17'],[19,19,'p4-sr-op18'],[20,20,'p4-sr-op19'],
-      [21,21,'p4-sr-op20'],[22,22,'p4-sr-op21'],[23,23,'p4-sr-op22'],[24,24,'p4-sr-op23'],
-      [25,25,'p4-sr-op24'],[26,26,'p4-sr-op25'],[27,27,'p4-sr-op26'],[28,28,'p4-sr-op27'],
-      [29,29,'p4-sr-op28'],[30,30,'p4-sr-op29'],[31,31,'p4-sr-op30'],[32,32,'p4-sr-op31'],
-      [33,33,'p4-sr-op32'],[34,34,'p4-sr-op33'],[35,35,'p4-sr-op34'],[36,36,'p4-sr-op35'],
-      [37,37,'p4-sr-op36'],[38,38,'p4-sr-op37'],[39,39,'p4-sr-op38'],[40,40,'p4-sr-op39'],
-      [41,41,'p4-sr-op40'],[42,42,'p4-sr-op41']] },
-    // Cyber Requirements -> p4-rXX
-    { prefix:'REQ', ranges:[[1,1,'p4-r01'],[2,3,'p4-r02'],[4,4,'p4-r03'],[5,6,'p4-r04'],
-      [7,10,'p4-r05'],[9,9,'p4-r06'],[11,11,'p4-r07'],[12,15,'p4-r08'],[16,17,'p4-r09'],
-      [18,20,'p4-r10'],[21,21,'p4-r11'],[22,22,'p4-r12'],[23,24,'p4-r13'],[25,28,'p4-r14'],
-      [29,29,'p4-r15'],[30,31,'p4-r16'],[32,32,'p4-r17'],[33,34,'p4-r18'],[35,36,'p4-r19'],
-      [37,40,'p4-r20'],[41,41,'p4-r21'],[42,44,'p4-r22'],[45,48,'p4-r23'],[49,49,'p4-r24'],
-      [51,52,'p4-r25'],[53,54,'p4-r26'],[55,55,'p4-r27'],[56,56,'p4-r28'],[57,58,'p4-r29'],
-      [59,59,'p4-r30']] },
-    // Business Q001-Q019 -> p2-qXXX
-    { prefix:'Q', ranges:[[1,1,'p2-q001'],[2,2,'p2-q002'],[3,3,'p2-q003'],[4,4,'p2-q004'],
-      [5,5,'p2-q005'],[6,6,'p2-q006'],[7,7,'p2-q007'],[8,8,'p2-q008'],[9,9,'p2-q009'],
-      [10,10,'p2-q010'],[11,11,'p2-q011'],[12,12,'p2-q012'],[13,13,'p2-q013'],[14,14,'p2-q014'],
-      [15,15,'p2-q015'],[16,16,'p2-q016'],[17,17,'p2-q017'],[18,18,'p2-q018'],[19,19,'p2-q019']] },
-    // IT Architecture Section A (On-Prem) A1-A45 -> p3-aXX
-    { prefix:'A', ranges:[[1,1,'p3-a01'],[2,5,'p3-a02'],[6,7,'p3-a03'],[8,9,'p3-a04'],
-      [10,14,'p3-a05'],[15,18,'p3-a06'],[19,23,'p3-a07'],[24,27,'p3-a08'],[28,34,'p3-a09'],
-      [35,40,'p3-a10'],[41,43,'p3-a11'],[44,45,'p3-a12']] },
-    // IT Architecture Section B (SaaS) B1-B58 -> p3-bXX
-    { prefix:'B', ranges:[[1,4,'p3-b01'],[5,5,'p3-b02'],[6,9,'p3-b03'],[21,24,'p3-b04'],
-      [34,34,'p3-b05'],[35,35,'p3-b06'],[29,29,'p3-b07'],[41,41,'p3-b07']] },
-    // IT Architecture Section C (General) C1-C49 -> p3-cXX
-    { prefix:'C', ranges:[[1,8,'p3-c01'],[12,19,'p3-c02'],[20,20,'p3-c03'],[21,22,'p3-c04'],
-      [23,26,'p3-c05'],[27,35,'p3-c06'],[37,41,'p3-c07'],[44,46,'p3-c08'],[47,49,'p3-c09']] },
-  ];
-  rangePatterns.forEach(({ prefix, ranges }) => {
-    ranges.forEach(([from, to, itemId]) => {
-      for (let n = from; n <= to; n++) {
-        map[prefix.toUpperCase() + n] = itemId;
-        map[prefix.toUpperCase() + String(n).padStart(2,'0')] = itemId;
-        map[prefix.toUpperCase() + String(n).padStart(3,'0')] = itemId;
-      }
+  Object.values(PHASES).forEach(ph => {
+    ph.groups.forEach(grp => {
+      grp.items.forEach(item => {
+        if (!item.qid) return;
+        const qid = item.qid.toUpperCase();
+        const m = qid.match(/^([A-Z]+)(\d+)$/);
+        if (!m) return;
+        const prefix = m[1];
+        const n = parseInt(m[2], 10);
+        map[prefix + n] = item.id;
+        map[prefix + String(n).padStart(2,'0')] = item.id;
+        map[prefix + String(n).padStart(3,'0')] = item.id;
+      });
     });
   });
   return map;
@@ -2299,6 +2548,109 @@ function parseCSV(text) {
   };
 }
 
+// ============================================================
+//  SHEET-AWARE IMPORT LOGIC
+//  Each sheet has fixed column positions. Vendor comments are
+//  imported from the column specified by the user:
+//   - Business Reqs       → col H (index 7)
+//   - IT - Architecture   → col I (index 8)
+//   - Security Reqs       → col I (index 8)
+//   - Cloud Provider      → col E (index 4)
+//   - Cloud Service       → col E (index 4)
+//   - Vendor              → col B (index 1)
+// ============================================================
+const SHEET_CONFIG = {
+  'Business Reqs':       { firstDataRow:4, aaCol:1, qidCol:null, reqCol:4, responseCol:6, noteCol:7 },
+  'IT - Architecture ':  { firstDataRow:4, aaCol:1, qidCol:null, reqCol:4, responseCol:7, noteCol:8, sectionCol:1 },
+  'Security Reqs':       { firstDataRow:4, aaCol:1, qidCol:3, reqCol:4, responseCol:7, noteCol:8 },
+  'Cloud Provider':      { firstDataRow:2, aaCol:0, qidCol:1, reqCol:2, responseCol:3, noteCol:4 },
+  'Cloud Service':       { firstDataRow:2, aaCol:0, qidCol:1, reqCol:2, responseCol:3, noteCol:4 },
+  'Vendor':              { firstDataRow:4, aaCol:null, qidCol:null, reqCol:0, responseCol:1, noteCol:1 }, // Vendor col B carries both the response and the comment
+};
+
+// Map: sheet-name -> section-letter (for IT) -> row-number -> itemId
+function buildSheetRowIndex() {
+  const byName = {};                    // sheetName -> { rowNum -> itemId } OR { 'A'|'B'|'C' -> {rowNum -> itemId}}
+  const byQid  = {};                    // sheetName -> qid -> itemId (SR1, CP1, CS1)
+  Object.entries(PHASES).forEach(([phKey, ph]) => {
+    ph.groups.forEach(grp => {
+      if (!grp.sheet) return;
+      const sheet = grp.sheet;
+      if (grp.section) {                // IT - Architecture A/B/C
+        if (!byName[sheet]) byName[sheet] = { __sections:true };
+        if (!byName[sheet][grp.section]) byName[sheet][grp.section] = {};
+      } else {
+        if (!byName[sheet]) byName[sheet] = {};
+      }
+      grp.items.forEach(item => {
+        const target = grp.section ? byName[sheet][grp.section] : byName[sheet];
+        if (item.row != null) target[item.row] = item.id;
+        if (item.qid) {
+          if (!byQid[sheet]) byQid[sheet] = {};
+          byQid[sheet][item.qid.toUpperCase()] = item.id;
+        }
+      });
+    });
+  });
+  return { byName, byQid };
+}
+
+// Read a cell as a clean string
+function cellStr(v){ return (v==null ? '' : String(v)).trim(); }
+
+// ITArchitecture rows use section letters in col B ('A', 'B', 'C') to mark breaks
+function detectITSection(row) {
+  const a = cellStr(row[1]);
+  if (a === 'A' || a === 'B' || a === 'C') return a;
+  return null;
+}
+
+// Given a sheet name and its rows-as-arrays, iterate rows and emit
+// { rowIdx, itemId, responseRaw, noteRaw, qid, reqText }
+function* iterateSheetRows(sheetName, rows2d, index) {
+  const cfg = SHEET_CONFIG[sheetName];
+  if (!cfg) return;
+  const bucket = index.byName[sheetName];
+  const qidBucket = index.byQid[sheetName] || {};
+  if (!bucket) return;
+  const hasSections = bucket.__sections;
+  let currentSection = null;
+
+  for (let r = cfg.firstDataRow - 1; r < rows2d.length; r++) {
+    const row = rows2d[r] || [];
+    const rowIdx = r + 1; // openpyxl 1-based row num
+
+    // Track IT section markers
+    if (hasSections) {
+      const sec = detectITSection(row);
+      if (sec) { currentSection = sec; continue; }
+    }
+
+    const reqText   = cfg.reqCol   != null ? cellStr(row[cfg.reqCol])   : '';
+    const qidText   = cfg.qidCol   != null ? cellStr(row[cfg.qidCol])   : '';
+    const respText  = cfg.responseCol != null ? cellStr(row[cfg.responseCol]) : '';
+    const noteText  = cfg.noteCol  != null ? cellStr(row[cfg.noteCol])  : '';
+
+    // Must have meaningful requirement text
+    if (!reqText || reqText.length < 3) continue;
+
+    // Find itemId: 1) by Quest ID (SR1/CP1/CS1) 2) by row number in sheet
+    let itemId = null;
+    if (qidText && qidBucket[qidText.toUpperCase()]) {
+      itemId = qidBucket[qidText.toUpperCase()];
+    } else if (hasSections && currentSection && bucket[currentSection]) {
+      itemId = bucket[currentSection][rowIdx] || null;
+    } else if (!hasSections) {
+      itemId = bucket[rowIdx] || null;
+    }
+
+    yield { rowIdx, itemId, responseRaw: respText, noteRaw: noteText, qid: qidText, reqText };
+  }
+}
+
+// ============================================================
+// New handleCSVUpload — sheet-aware
+// ============================================================
 function handleCSVUpload(input) {
   const file = input.files[0];
   if (!file) return;
@@ -2307,46 +2659,8 @@ function handleCSVUpload(input) {
   document.getElementById('importPreview').style.display = 'none';
 
   const ext = file.name.split('.').pop().toLowerCase();
-
-  if (ext === 'xlsx' || ext === 'xls') {
-    // Use SheetJS to read Excel files
-    if (typeof XLSX === 'undefined') {
-      document.getElementById('importResult').style.display = 'block';
-      document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Error:</strong> SheetJS library not loaded. Please check your internet connection and try again.</div>';
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const wb = XLSX.read(e.target.result, { type: 'array' });
-        // Process ALL sheets and merge results (avoids picking just one sheet)
-        const allRows = [];
-        const sheetsUsed = [];
-        wb.SheetNames.forEach(sheetName => {
-          const ws = wb.Sheets[sheetName];
-          const csv = XLSX.utils.sheet_to_csv(ws, { blankrows: false });
-          const parsed = parseCSV(csv);
-          if (!parsed.error && parsed.rows.length > 0) {
-            allRows.push(...parsed.rows);
-            sheetsUsed.push(sheetName + '(' + parsed.rows.length + ')');
-          }
-        });
-        if (allRows.length === 0) {
-          document.getElementById('importResult').style.display = 'block';
-          document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> Could not find any matching data in this Excel file.</div>';
-          return;
-        }
-        const merged = { rows: allRows, hasResponse: true, hasNote: true, hasStatus: true, sheetName: sheetsUsed.join(', ') };
-        document.getElementById('csvFileName').textContent = file.name + ' (' + sheetsUsed.length + ' sheets, ' + allRows.length + ' rows)';
-        showImportPreview(merged);
-      } catch(err) {
-        document.getElementById('importResult').style.display = 'block';
-        document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> Could not read Excel file: ' + err.message + '</div>';
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  } else {
-    // CSV / TXT
+  if (ext === 'csv' || ext === 'txt') {
+    // Legacy CSV: fall back to the old header-based parser
     const reader = new FileReader();
     reader.onload = e => {
       const parsed = parseCSV(e.target.result);
@@ -2358,9 +2672,71 @@ function handleCSVUpload(input) {
       showImportPreview(parsed);
     };
     reader.readAsText(file);
+    return;
   }
+
+  if (ext !== 'xlsx' && ext !== 'xls') {
+    document.getElementById('importResult').style.display = 'block';
+    document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Unsupported file type.</strong> Use .xlsx, .xls, .csv or .txt.</div>';
+    return;
+  }
+
+  if (typeof XLSX === 'undefined') {
+    document.getElementById('importResult').style.display = 'block';
+    document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Error:</strong> SheetJS library not loaded. Please check your internet connection and try again.</div>';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type:'array' });
+      const index = buildSheetRowIndex();
+      const allRows = [];
+      const sheetsUsed = [];
+      const unknownSheets = [];
+      wb.SheetNames.forEach(sheetName => {
+        if (!SHEET_CONFIG[sheetName]) { unknownSheets.push(sheetName); return; }
+        const ws = wb.Sheets[sheetName];
+        const rows2d = XLSX.utils.sheet_to_json(ws, { header:1, defval:'', blankrows:true });
+        let count = 0;
+        for (const r of iterateSheetRows(sheetName, rows2d, index)) {
+          allRows.push({
+            sheet: sheetName,
+            sheetRow: r.rowIdx,
+            itemId: r.itemId,
+            qid: r.qid,
+            label: (r.qid ? r.qid + ' — ' : '') + (r.reqText.slice(0,100)),
+            desc: r.reqText,
+            responseRaw: r.responseRaw,
+            noteRaw: r.noteRaw,
+            statusRaw: '',
+          });
+          count++;
+        }
+        if (count > 0) sheetsUsed.push(sheetName + ' (' + count + ')');
+      });
+
+      if (allRows.length === 0) {
+        document.getElementById('importResult').style.display = 'block';
+        document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> No rows matched the expected sheet layout. Supported sheets: ' + Object.keys(SHEET_CONFIG).join(', ') + '.</div>';
+        return;
+      }
+
+      const merged = { rows: allRows, hasResponse:true, hasNote:true, hasStatus:false, sheetName: sheetsUsed.join(', '), unknownSheets };
+      const sumMsg = sheetsUsed.length + ' sheet(s) recognised, ' + allRows.length + ' rows' + (unknownSheets.length ? ' · skipped sheets: ' + unknownSheets.join(', ') : '');
+      document.getElementById('csvFileName').textContent = file.name + ' — ' + sumMsg;
+      showImportPreview(merged);
+    } catch(err) {
+      console.error(err);
+      document.getElementById('importResult').style.display = 'block';
+      document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> Could not read Excel file: ' + err.message + '</div>';
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
+// Override showImportPreview to use preprocessed itemId (when available) instead of fuzzy matching.
 function showImportPreview(parsed) {
   const index = buildItemIndex();
   _importData = [];
@@ -2373,21 +2749,27 @@ function showImportPreview(parsed) {
   const responseLabels = { '':'—', full:'Full Support', partial:'Partial Support', could:'Could be implemented', not:'Not Supported', na:'N/A' };
 
   parsed.rows.forEach(row => {
-    const match = matchItem(row.label, row.desc, index);
+    // Use preprocessed itemId when available (new sheet-aware path)
+    let matchItemObj = null, matchConf = null;
+    if (row.itemId) {
+      const found = index.find(i => i.id === row.itemId);
+      if (found) { matchItemObj = found; matchConf = 'exact'; }
+    } else {
+      // Fall back to old fuzzy match (for CSV legacy path)
+      const m = matchItem(row.label, row.desc, index);
+      if (m) { matchItemObj = m.item; matchConf = m.confidence; }
+    }
 
-    // Determine status:
-    // If response is populated → In Progress (unless status explicitly says something else)
     const normResponse = normaliseResponse(row.responseRaw);
     let normStatus = normaliseStatus(row.statusRaw);
-    if (!normStatus && normResponse) normStatus = 'inprogress'; // response filled = in progress
+    // If a comment was imported, mark as In Progress (unless already Done via response)
+    if (!normStatus && (row.noteRaw || normResponse)) normStatus = 'inprogress';
 
-    // Note: use comment/vendor comment field
     const note = row.noteRaw || '';
-
     let matchCell, matchClass;
-    if (!match) {
+    if (!matchItemObj) {
       matchCell = 'No match'; matchClass = 'import-match-none'; unmatched++;
-    } else if (match.confidence === 'exact') {
+    } else if (matchConf === 'exact') {
       matchCell = 'Exact'; matchClass = 'import-match-ok'; matched++;
     } else {
       matchCell = 'Fuzzy'; matchClass = 'import-match-fuzzy'; fuzzy++;
@@ -2395,18 +2777,20 @@ function showImportPreview(parsed) {
 
     const tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid var(--border)';
-    const monoStyle = "font-family:monospace";
-    tr.innerHTML = `<td style="padding:6px 10px;font-size:11px;color:var(--text);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${row.label}">${row.label.substring(0,50)}</td><td style="padding:6px 10px;${monoStyle};font-size:10px;color:var(--accent2);">${match ? match.item.id : '—'}</td><td style="padding:6px 10px;"><span style="${monoStyle};font-size:10px;color:${statusColors[normStatus]};background:${statusColors[normStatus]}22;border:1px solid ${statusColors[normStatus]}44;border-radius:4px;padding:2px 6px;">${statusLabels[normStatus]}</span></td><td style="padding:6px 10px;${monoStyle};font-size:10px;color:var(--subtle);">${responseLabels[normResponse] || '—'}</td><td style="padding:6px 10px;font-size:10px;color:var(--subtle);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${note}">${note ? note.substring(0,40) + (note.length>40?'…':'') : '—'}</td><td style="padding:6px 10px;text-align:center;"><span class="${matchClass}">${matchCell}</span></td>`;
+    const monoStyle = 'font-family:monospace';
+    const labelShort = (row.label || '').toString().substring(0, 50);
+    const sheetHint = row.sheet ? '<div style="font-size:9px;color:var(--muted);">' + row.sheet + ' row ' + row.sheetRow + '</div>' : '';
+    tr.innerHTML = `<td style="padding:6px 10px;font-size:11px;color:var(--text);max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="${(row.label||'').replace(/"/g,'&quot;')}">${labelShort}${sheetHint}</td><td style="padding:6px 10px;${monoStyle};font-size:10px;color:var(--accent2);">${matchItemObj ? matchItemObj.id : '—'}</td><td style="padding:6px 10px;"><span style="${monoStyle};font-size:10px;color:${statusColors[normStatus]};background:${statusColors[normStatus]}22;border:1px solid ${statusColors[normStatus]}44;border-radius:4px;padding:2px 6px;">${statusLabels[normStatus]}</span></td><td style="padding:6px 10px;${monoStyle};font-size:10px;color:var(--subtle);">${responseLabels[normResponse] || '—'}</td><td style="padding:6px 10px;font-size:10px;color:var(--subtle);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${note.replace(/"/g,'&quot;')}">${note ? (note.substring(0,50) + (note.length>50?'…':'')) : '—'}</td><td style="padding:6px 10px;text-align:center;"><span class="${matchClass}">${matchCell}</span></td>`;
     tbody.appendChild(tr);
 
-    if (match) {
+    if (matchItemObj) {
       _importData.push({
-        id: match.item.id,
+        id: matchItemObj.id,
         status: normStatus,
         response: normResponse,
         note: note,
-        isCyber: match.item.isCyber,
-        confidence: match.confidence,
+        isCyber: matchItemObj.isCyber,
+        confidence: matchConf,
       });
     }
   });
@@ -2417,16 +2801,8 @@ function showImportPreview(parsed) {
     matched + ' exact · ' + fuzzy + ' fuzzy · ' + unmatched + ' unmatched (skipped)';
   document.getElementById('importApplyBtn').textContent = 'Apply ' + (matched + fuzzy) + ' Updates';
   document.getElementById('importPreview').style.display = 'block';
-
-  // Update table header to show Response column
-  const thead = document.querySelector('#importTable thead tr');
-  if (thead && thead.children.length < 6) {
-    const th = document.createElement('th');
-    th.style.cssText = "font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;";
-    th.textContent = 'Response';
-    thead.insertBefore(th, thead.children[3]);
-  }
 }
+
 
 function applyImport() {
   if (!_importData.length) return;
