@@ -2176,18 +2176,18 @@ function parseCSV(text) {
   // Detect column indices — support multiple naming conventions
   const findCol = (...keys) => headers.findIndex(h => keys.some(k => h.includes(k)));
 
-  // Item/label column
-  const itemCol = findCol('requirement','question','item','label','name','task','description','evaluat');
-  // Description column (secondary)
-  const descCol = findCol('description','desc','detail');
-  // Status column
-  const statusCol = findCol('status','state','progress','complete','vendorfeedback','vendorfeed');
-  // Response column (Cyber: Full Support / Partial etc.)
-  const responseCol = findCol('response','answer','vendorresponse');
-  // Note/comment column
+  // Quest ID column (col B in Cyber sheets: SR1, CS1, CP1 etc.)
+  const questIdCol = findCol('questid','questionnaireid','id');
+  // Item/label column — evaluation questions, requirements etc.
+  const itemCol = findCol('evaluationquestion','requirement','question','item','label','name','task','evaluat');
+  // Response column — "Response", "Answer", "Vendor feedback"
+  const responseCol = findCol('response','answer','vendorfeedback','vendorfeed');
+  // Note/comment column — "Comments", "Vendor comments", "Explanation"
   const noteCol = findCol('comment','note','remark','vendorcomment','explanation');
-  // Quest ID column
-  const questIdCol = findCol('questid','id','questionnaireid','sr','cs','cp');
+  // Status column
+  const statusCol = findCol('status','state','progress','complete');
+  // Description column (secondary label source)
+  const descCol = findCol('description','desc','detail');
 
   if (itemCol < 0 && questIdCol < 0) {
     return { error: 'Could not find an Item/Question/Requirement column. Make sure your CSV has a recognisable header row.' };
@@ -2239,25 +2239,26 @@ function handleCSVUpload(input) {
     reader.onload = e => {
       try {
         const wb = XLSX.read(e.target.result, { type: 'array' });
-        // Try each sheet and use the one with the most data rows
-        let bestParsed = null, bestCount = 0;
+        // Process ALL sheets and merge results (avoids picking just one sheet)
+        const allRows = [];
+        const sheetsUsed = [];
         wb.SheetNames.forEach(sheetName => {
           const ws = wb.Sheets[sheetName];
           const csv = XLSX.utils.sheet_to_csv(ws, { blankrows: false });
           const parsed = parseCSV(csv);
-          if (!parsed.error && parsed.rows.length > bestCount) {
-            bestCount = parsed.rows.length;
-            bestParsed = parsed;
-            bestParsed.sheetName = sheetName;
+          if (!parsed.error && parsed.rows.length > 0) {
+            allRows.push(...parsed.rows);
+            sheetsUsed.push(sheetName + '(' + parsed.rows.length + ')');
           }
         });
-        if (!bestParsed || bestCount === 0) {
+        if (allRows.length === 0) {
           document.getElementById('importResult').style.display = 'block';
-          document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> Could not find any matching data in this Excel file. Make sure it has a header row with Item/Question and Status/Response columns.</div>';
+          document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> Could not find any matching data in this Excel file.</div>';
           return;
         }
-        document.getElementById('csvFileName').textContent = file.name + ' (sheet: ' + bestParsed.sheetName + ', ' + bestCount + ' rows)';
-        showImportPreview(bestParsed);
+        const merged = { rows: allRows, hasResponse: true, hasNote: true, hasStatus: true, sheetName: sheetsUsed.join(', ') };
+        document.getElementById('csvFileName').textContent = file.name + ' (' + sheetsUsed.length + ' sheets, ' + allRows.length + ' rows)';
+        showImportPreview(merged);
       } catch(err) {
         document.getElementById('importResult').style.display = 'block';
         document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> Could not read Excel file: ' + err.message + '</div>';
