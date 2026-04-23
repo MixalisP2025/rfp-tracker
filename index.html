@@ -2109,7 +2109,7 @@ function matchItem(csvLabel, csvDesc, index) {
 
   // 1. Extract ID prefix+number from label (CP1, SR42, CS73, Q001, REQ 5 etc.)
   const combined = (csvLabel || '') + ' ' + (csvDesc || '');
-  const idMatch = combined.match(/(CP|CS|SR|Q|REQ)\s*(\d+)/i);
+    const idMatch = combined.match(/(CP|CS|SR|Q|REQ)\s*(\d+)/i);
   if (idMatch) {
     const key = idMatch[1].toUpperCase() + idMatch[2];
     const keyPad2 = idMatch[1].toUpperCase() + String(parseInt(idMatch[2])).padStart(2,'0');
