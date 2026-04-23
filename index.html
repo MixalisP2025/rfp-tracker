@@ -312,6 +312,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <div class="meta-item"><div class="mlabel">Final Submission</div><div class="mval"><span class="deadline-chip">⚠️ 12 May 2026 — 3:00 PM</span></div></div>
     <div class="meta-item"><div class="mlabel">Storage</div><div class="mval"><span id="syncBadge" style="font-family:'DM Mono',monospace;font-size:12px;color:#93c5fd;">🔄 Connecting...</span></div></div>
     <div class="meta-item"><button onclick="printSection()" style="font-family:'DM Mono',monospace;font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--subtle);cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--subtle)'">🖨️ Print Section</button></div>
+    <div class="meta-item"><button onclick="openStatusReport()" style="font-family:'DM Mono',monospace;font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid var(--amber-border);background:var(--amber-dim);color:#fcd34d;cursor:pointer;transition:all .15s;" onmouseover="this.style.background='var(--amber)';this.style.color='#000'" onmouseout="this.style.background='var(--amber-dim)';this.style.color='#fcd34d'">📋 Status Report</button></div>
   </div>
 </div>
 
@@ -2397,6 +2398,202 @@ function syncTimestamps() {
       renderAllTimestamps();
     }
   }).catch(() => {});
+}
+
+// ------------------------------------------------------------
+//  STATUS REPORT
+// ------------------------------------------------------------
+function openStatusReport() {
+  const now = new Date();
+  const dateStr = now.toLocaleString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  const deadline = new Date('2026-05-12T15:00:00');
+  const daysLeft = Math.ceil((deadline - now) / 86400000);
+
+  // Collect data
+  const outstanding = [];   // not started, no note, no response
+  const inProgress = [];
+  const blocked = [];
+  const flagged = getFlagged();
+  const questions = loadQuestions();
+
+  let totalDone = 0, totalAll = 0;
+  const phaseStats = {};
+
+  Object.entries(PHASES).forEach(([key, ph]) => {
+    const meta = PHASE_META[key];
+    const allItems = ph.groups.flatMap(g => g.items);
+    let pDone = 0, pBlocked = 0, pInprog = 0, pOut = 0;
+
+    allItems.forEach(item => {
+      const st = getItem(item.id);
+      const status = st.status || '';
+      const hasNote = st.comment && st.comment.replace(/<[^>]*>/g,'').trim();
+      const hasResponse = st.response && st.response !== '';
+      totalAll++;
+
+      if (status === 'done' || status === 'na') { pDone++; totalDone++; }
+      else if (status === 'blocked') { pBlocked++; blocked.push({ item, phase: meta.label, note: hasNote ? st.comment.replace(/<[^>]*>/g,'').trim() : '' }); }
+      else if (status === 'inprogress') { pInprog++; inProgress.push({ item, phase: meta.label }); }
+      else if (!status && !hasNote && !hasResponse) {
+        pOut++;
+        outstanding.push({ item, phase: meta.label, group: ph.groups.find(g => g.items.find(i => i.id === item.id))?.title || '' });
+      }
+    });
+
+    phaseStats[key] = { label: meta.label, icon: meta.icon, total: allItems.length, done: pDone, blocked: pBlocked, inprog: pInprog, outstanding: pOut };
+  });
+
+  const overallPct = totalAll ? Math.round(totalDone / totalAll * 100) : 0;
+
+  // Build HTML
+  let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>Status Report — Alpha Bank RFP — ${now.toLocaleDateString('en-GB')}</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1e293b; background: #fff; margin: 0; padding: 0; }
+  .page { max-width: 900px; margin: 0 auto; padding: 32px 40px; }
+  h1 { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+  h2 { font-size: 15px; font-weight: 700; color: #0f172a; margin: 28px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; }
+  h3 { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .06em; margin: 16px 0 6px; }
+  .meta { font-size: 11px; color: #64748b; margin-bottom: 20px; font-family: monospace; }
+  .deadline { display: inline-block; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 24px; }
+  .summary-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; text-align: center; }
+  .summary-card .num { font-size: 26px; font-weight: 800; line-height: 1; margin-bottom: 3px; }
+  .summary-card .lbl { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: .06em; }
+  .num-red { color: #dc2626; } .num-amber { color: #d97706; } .num-green { color: #16a34a; } .num-blue { color: #2563eb; } .num-grey { color: #475569; }
+  .phase-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+  .phase-table th { background: #f1f5f9; color: #475569; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; padding: 7px 10px; text-align: left; border-bottom: 1px solid #cbd5e1; }
+  .phase-table td { padding: 7px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  .phase-table tr:last-child td { border-bottom: none; }
+  .rag { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+  .rag-green { background: #dcfce7; color: #166534; } .rag-amber { background: #fef9c3; color: #854d0e; } .rag-red { background: #fee2e2; color: #991b1b; }
+  .item-list { margin: 0; padding: 0; list-style: none; }
+  .item-row { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: flex-start; }
+  .item-row:last-child { border-bottom: none; }
+  .item-id { font-family: monospace; font-size: 10px; color: #94a3b8; white-space: nowrap; min-width: 70px; padding-top: 1px; }
+  .item-label { font-weight: 600; color: #0f172a; font-size: 12px; }
+  .item-phase { font-size: 10px; color: #64748b; margin-top: 2px; }
+  .item-note { font-size: 11px; color: #475569; margin-top: 4px; padding: 4px 8px; background: #fffbeb; border-left: 3px solid #f59e0b; border-radius: 3px; }
+  .item-group { font-size: 10px; color: #94a3b8; }
+  .q-card { padding: 10px 12px; border: 1px solid #e2e8f0; border-left: 3px solid #3b82f6; border-radius: 6px; margin-bottom: 8px; }
+  .q-link { font-family: monospace; font-size: 10px; color: #3b82f6; margin-bottom: 4px; }
+  .q-text { font-size: 12px; color: #1e293b; white-space: pre-wrap; }
+  .q-date { font-size: 10px; color: #94a3b8; margin-top: 4px; font-family: monospace; }
+  .empty { color: #94a3b8; font-style: italic; font-size: 12px; padding: 8px 0; }
+  .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; background: #3b82f6; border-radius: 4px; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #94a3b8; font-family: monospace; }
+  @media print { body { font-size: 11px; } .page { padding: 16px 20px; } h2 { margin-top: 20px; } @page { margin: 1.5cm; } }
+</style>
+</head><body><div class="page">`;
+
+  // Header
+  html += `<h1>Alpha Bank RFP — Status Report</h1>
+<div class="meta">Generated: ${dateStr} &nbsp;|&nbsp; Reference: CS00460 / NDA 1187 &nbsp;|&nbsp; <span class="deadline">⚠ ${daysLeft} days to deadline</span></div>`;
+
+  // Summary KPIs
+  const outstanding_count = outstanding.length;
+  const blocked_count = blocked.length;
+  const inprog_count = inProgress.length;
+  const questions_count = questions.length;
+
+  html += `<div class="summary-grid">
+    <div class="summary-card"><div class="num num-grey">${overallPct}%</div><div class="lbl">Complete</div></div>
+    <div class="summary-card"><div class="num num-red">${outstanding_count}</div><div class="lbl">Outstanding</div></div>
+    <div class="summary-card"><div class="num num-amber">${blocked_count}</div><div class="lbl">Blocked</div></div>
+    <div class="summary-card"><div class="num num-blue">${inprog_count}</div><div class="lbl">In Progress</div></div>
+    <div class="summary-card"><div class="num num-amber">${questions_count}</div><div class="lbl">Open Questions</div></div>
+  </div>`;
+
+  // Phase summary table
+  html += `<h2>Phase Summary</h2>
+  <table class="phase-table"><thead><tr>
+    <th>Phase</th><th>Total</th><th>Done</th><th>Outstanding</th><th>In Progress</th><th>Blocked</th><th>Progress</th><th>Status</th>
+  </tr></thead><tbody>`;
+
+  Object.entries(phaseStats).forEach(([key, s]) => {
+    const pct = s.total ? Math.round(s.done / s.total * 100) : 0;
+    const rag = s.blocked > 0 ? 'red' : pct >= 80 ? 'green' : pct >= 40 ? 'amber' : 'red';
+    const ragLabel = { green:'On Track', amber:'At Risk', red: s.blocked > 0 ? 'Blocked' : 'Behind' };
+    html += `<tr>
+      <td><strong>${s.icon} ${s.label}</strong></td>
+      <td style="text-align:center;">${s.total}</td>
+      <td style="text-align:center;color:#16a34a;font-weight:600;">${s.done}</td>
+      <td style="text-align:center;color:${s.outstanding>0?'#dc2626':'#64748b'};font-weight:${s.outstanding>0?'600':'400'};">${s.outstanding}</td>
+      <td style="text-align:center;color:#2563eb;">${s.inprog}</td>
+      <td style="text-align:center;color:${s.blocked>0?'#dc2626':'#64748b'};font-weight:${s.blocked>0?'600':'400'};">${s.blocked}</td>
+      <td style="min-width:80px;"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${rag==='green'?'#16a34a':rag==='amber'?'#d97706':'#dc2626'};"></div></div><span style="font-size:10px;color:#64748b;">${pct}%</span></td>
+      <td><span class="rag rag-${rag}">${ragLabel[rag]}</span></td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+
+  // Outstanding items
+  html += `<h2>Outstanding Items (${outstanding_count})</h2>
+  <p style="font-size:11px;color:#64748b;margin-bottom:12px;">Items with no status, no note and no response set — these need attention.</p>`;
+
+  if (outstanding_count === 0) {
+    html += `<div class="empty">No outstanding items — all items have been actioned.</div>`;
+  } else {
+    // Group by phase
+    const byPhase = {};
+    outstanding.forEach(o => {
+      if (!byPhase[o.phase]) byPhase[o.phase] = [];
+      byPhase[o.phase].push(o);
+    });
+    Object.entries(byPhase).forEach(([phase, items]) => {
+      html += `<h3>${phase} (${items.length})</h3><div style="border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;">`;
+      items.forEach(o => {
+        html += `<div class="item-row">
+          <span class="item-id">${o.item.id}</span>
+          <div><div class="item-label">${o.item.label}</div>
+          <div class="item-group">${o.group}</div></div>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+  }
+
+  // Blocked items
+  if (blocked_count > 0) {
+    html += `<h2>Blocked Items (${blocked_count})</h2>`;
+    html += `<div style="border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;">`;
+    blocked.forEach(b => {
+      html += `<div class="item-row">
+        <span class="item-id">${b.item.id}</span>
+        <div style="flex:1"><div class="item-label">${b.item.label}</div>
+        <div class="item-phase">${b.phase}</div>
+        ${b.note ? '<div class="item-note">' + b.note.substring(0,200) + (b.note.length>200?'…':'') + '</div>' : ''}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Open questions
+  html += `<h2>Open Questions (${questions_count})</h2>`;
+  if (questions_count === 0) {
+    html += `<div class="empty">No questions posted.</div>`;
+  } else {
+    questions.forEach((q, i) => {
+      html += `<div class="q-card">
+        <div class="q-link">${q.itemId ? '🔗 ' + q.itemId + (q.itemLabel ? ' — ' + q.itemLabel : '') : 'No item linked'} ${q.itemPhase ? '· ' + q.itemPhase : ''}</div>
+        <div class="q-text">${q.question}</div>
+        <div class="q-date">${q.date}</div>
+      </div>`;
+    });
+  }
+
+  // Footer
+  html += `<div class="footer">Alpha Bank RFP Response Tracker · Advanced Information Services AE · Report generated ${dateStr}</div>`;
+  html += `</div></body></html>`;
+
+  // Open in new window and print
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
 }
 
 // ------------------------------------------------------------
