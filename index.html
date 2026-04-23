@@ -298,6 +298,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   @page{margin:1.5cm;}
 }
 </style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -537,7 +538,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <!-- IMPORT -->
 <div class="section" id="import">
   <div class="section-title">📥 Import from Excel / CSV</div>
-  <div class="section-sub">Export your Excel sheet as CSV, then import here to update statuses and notes across all phases.</div>
+  <div class="section-sub">Import your Excel (.xlsx) or CSV file directly — no need to export first. Just download from OneDrive and import.</div>
 
   <div class="info-box green">
     <strong>How to export from Excel:</strong> Open your spreadsheet → File → Save As → CSV (Comma delimited). The CSV needs at minimum an <strong>Item</strong> column (matching the item labels) and a <strong>Status</strong> column. A <strong>Note</strong> column is optional.
@@ -557,7 +558,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
       <label style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;font-family:'DM Mono',monospace;font-size:12px;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:500;">
         📂 Choose CSV File
-        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none;" onchange="handleCSVUpload(this)">
+        <input type="file" id="csvFileInput" accept=".xlsx,.xls,.csv,.txt" style="display:none;" onchange="handleCSVUpload(this)">
       </label>
       <span id="csvFileName" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">No file selected</span>
     </div>
@@ -2162,19 +2163,61 @@ function handleCSVUpload(input) {
   const file = input.files[0];
   if (!file) return;
   document.getElementById('csvFileName').textContent = file.name;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const parsed = parseCSV(e.target.result);
-    document.getElementById('importResult').style.display = 'none';
-    if (parsed.error) {
-      document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importResult').style.display = 'none';
+  document.getElementById('importPreview').style.display = 'none';
+
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  if (ext === 'xlsx' || ext === 'xls') {
+    // Use SheetJS to read Excel files
+    if (typeof XLSX === 'undefined') {
       document.getElementById('importResult').style.display = 'block';
-      document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> ' + parsed.error + '</div>';
+      document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Error:</strong> SheetJS library not loaded. Please check your internet connection and try again.</div>';
       return;
     }
-    showImportPreview(parsed);
-  };
-  reader.readAsText(file);
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const wb = XLSX.read(e.target.result, { type: 'array' });
+        // Try each sheet and use the one with the most data rows
+        let bestParsed = null, bestCount = 0;
+        wb.SheetNames.forEach(sheetName => {
+          const ws = wb.Sheets[sheetName];
+          const csv = XLSX.utils.sheet_to_csv(ws, { blankrows: false });
+          const parsed = parseCSV(csv);
+          if (!parsed.error && parsed.rows.length > bestCount) {
+            bestCount = parsed.rows.length;
+            bestParsed = parsed;
+            bestParsed.sheetName = sheetName;
+          }
+        });
+        if (!bestParsed || bestCount === 0) {
+          document.getElementById('importResult').style.display = 'block';
+          document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> Could not find any matching data in this Excel file. Make sure it has a header row with Item/Question and Status/Response columns.</div>';
+          return;
+        }
+        document.getElementById('csvFileName').textContent = file.name + ' (sheet: ' + bestParsed.sheetName + ', ' + bestCount + ' rows)';
+        showImportPreview(bestParsed);
+      } catch(err) {
+        document.getElementById('importResult').style.display = 'block';
+        document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> Could not read Excel file: ' + err.message + '</div>';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    // CSV / TXT
+    const reader = new FileReader();
+    reader.onload = e => {
+      const parsed = parseCSV(e.target.result);
+      if (parsed.error) {
+        document.getElementById('importResult').style.display = 'block';
+        document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> ' + parsed.error + '</div>';
+        return;
+      }
+      showImportPreview(parsed);
+    };
+    reader.readAsText(file);
+  }
 }
 
 function showImportPreview(parsed) {
