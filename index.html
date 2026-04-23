@@ -250,6 +250,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .pm-mini-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;min-width:80px;}
 .pm-mini-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .4s;}
 
+/* IMPORT TAB */
+.import-match-ok{color:#86efac;font-family:'DM Mono',monospace;font-size:11px;}
+.import-match-fuzzy{color:#fcd34d;font-family:'DM Mono',monospace;font-size:11px;}
+.import-match-none{color:#fca5a5;font-family:'DM Mono',monospace;font-size:11px;}
+.import-status-chip{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:4px;}
+
 /* PRINT */
 @media print {
   body{background:#fff;color:#000;}
@@ -321,6 +327,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   <div class="nav-tab" onclick="showSection('phase5',this)">💰 Phase 5 — Finance <span class="tab-count" id="tc-p5">0</span></div>
   <div class="nav-tab" onclick="showSection('links',this)">❓ Questions</div>
   <div class="nav-tab" onclick="showSection('pm',this)">📊 Project Management</div>
+  <div class="nav-tab" onclick="showSection('import',this)">📥 Import</div>
 </nav>
 
 <div class="main">
@@ -515,6 +522,67 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">🚫 Blocked Items <span id="pm-blocked-count" style="font-family:'DM Mono',monospace;font-size:11px;color:#fca5a5;margin-left:8px;"></span></div>
     <div id="pm-blocked-list"></div>
   </div>
+</div>
+
+<!-- IMPORT -->
+<div class="section" id="import">
+  <div class="section-title">📥 Import from Excel / CSV</div>
+  <div class="section-sub">Export your Excel sheet as CSV, then import here to update statuses and notes across all phases.</div>
+
+  <div class="info-box green">
+    <strong>How to export from Excel:</strong> Open your spreadsheet → File → Save As → CSV (Comma delimited). The CSV needs at minimum an <strong>Item</strong> column (matching the item labels) and a <strong>Status</strong> column. A <strong>Note</strong> column is optional.
+  </div>
+
+  <div class="info-box">
+    <strong>Status values recognised:</strong> done / complete / finished / yes → ✅ Done &nbsp;|&nbsp;
+    in progress / wip / started → ⏳ In Progress &nbsp;|&nbsp;
+    investigate / review / tbc → 🔎 Investigate &nbsp;|&nbsp;
+    blocked / on hold / stuck → ⛔ Blocked &nbsp;|&nbsp;
+    n/a / not applicable / na → N/A &nbsp;|&nbsp;
+    anything else → Not started
+  </div>
+
+  <div class="stat-card" style="margin-bottom:16px;">
+    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:16px;">Select your CSV file</div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <label style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;font-family:'DM Mono',monospace;font-size:12px;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:500;">
+        📂 Choose CSV File
+        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none;" onchange="handleCSVUpload(this)">
+      </label>
+      <span id="csvFileName" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">No file selected</span>
+    </div>
+  </div>
+
+  <!-- Preview table -->
+  <div id="importPreview" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;" id="importPreviewTitle">Preview</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;" id="importPreviewSub"></div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-sm btn-cancel" onclick="clearImport()">Cancel</button>
+        <button class="btn-sm btn-save" id="importApplyBtn" onclick="applyImport()" style="padding:8px 22px;">Apply Import</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;" id="importTable">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;">Item Label (matched)</th>
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;">Item ID</th>
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;">New Status</th>
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;">Note</th>
+            <th style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:center;">Match</th>
+          </tr>
+        </thead>
+        <tbody id="importTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="importResult" style="display:none;"></div>
 </div>
 
 </div><!-- /main -->
@@ -1903,6 +1971,193 @@ function printSection() {
 
   // Clean up injected note divs after print
   noteEls.forEach(el => el.remove());
+}
+
+
+// ------------------------------------------------------------
+//  CSV IMPORT
+// ------------------------------------------------------------
+let _importData = []; // parsed and matched rows ready to apply
+
+function normaliseStatus(raw) {
+  if (!raw) return '';
+  const s = raw.toString().toLowerCase().trim();
+  if (['done','complete','completed','finished','yes','y','1','true','full support','fully supported'].some(v => s.includes(v))) return 'done';
+  if (['in progress','inprogress','wip','started','ongoing','in-progress','progress'].some(v => s.includes(v))) return 'inprogress';
+  if (['investigate','review','tbc','to be confirmed','check','checking','under review'].some(v => s.includes(v))) return 'investigate';
+  if (['blocked','block','on hold','hold','stuck','waiting','wait','pending'].some(v => s.includes(v))) return 'blocked';
+  if (['n/a','na','not applicable','not relevant','not required'].some(v => s.includes(v))) return 'na';
+  return '';
+}
+
+function buildItemIndex() {
+  // Build a flat list of all items with their labels normalised for matching
+  const index = [];
+  Object.entries(PHASES).forEach(([phaseKey, ph]) => {
+    ph.groups.forEach(grp => {
+      grp.items.forEach(item => {
+        index.push({
+          id: item.id,
+          label: item.label,
+          labelNorm: item.label.toLowerCase().replace(/[^a-z0-9]/g, ''),
+          phase: ph.label,
+        });
+      });
+    });
+  });
+  return index;
+}
+
+function matchItem(csvLabel, index) {
+  const norm = csvLabel.toLowerCase().replace(/[^a-z0-9]/g, '');
+  // Exact normalised match
+  const exact = index.find(i => i.labelNorm === norm);
+  if (exact) return { item: exact, confidence: 'exact' };
+  // Contains match (CSV label contains item label or vice versa)
+  const contains = index.find(i =>
+    norm.includes(i.labelNorm) || i.labelNorm.includes(norm)
+  );
+  if (contains) return { item: contains, confidence: 'fuzzy' };
+  // Partial word match — score by shared words
+  const csvWords = norm.split(/\s+/).filter(w => w.length > 2);
+  let best = null, bestScore = 0;
+  index.forEach(i => {
+    const itemWords = i.labelNorm.split(/\s+/).filter(w => w.length > 2);
+    const shared = csvWords.filter(w => itemWords.some(iw => iw.includes(w) || w.includes(iw))).length;
+    const score = shared / Math.max(csvWords.length, itemWords.length, 1);
+    if (score > bestScore && score >= 0.4) { bestScore = score; best = i; }
+  });
+  if (best) return { item: best, confidence: 'fuzzy' };
+  return null;
+}
+
+function parseCSV(text) {
+  const lines = text.split(/[\r\n]+/).filter(l => l.trim());
+  if (lines.length < 2) return null;
+  // Detect delimiter
+  const delim = lines[0].includes('	') ? '	' : ',';
+  const parseRow = row => {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < row.length; i++) {
+      const c = row[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === delim && !inQ) { result.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    result.push(cur.trim());
+    return result;
+  };
+  const headers = parseRow(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9]/g,''));
+  // Find column indices
+  const itemCol = headers.findIndex(h => ['item','label','name','description','task','question'].some(k => h.includes(k)));
+  const statusCol = headers.findIndex(h => ['status','state','progress','complete'].some(k => h.includes(k)));
+  const noteCol = headers.findIndex(h => ['note','comment','remark','observation'].some(k => h.includes(k)));
+  if (itemCol < 0) return { error: 'Could not find an Item/Label column. Make sure your CSV has a column named "Item", "Label", "Task" or similar.' };
+  if (statusCol < 0) return { error: 'Could not find a Status column. Make sure your CSV has a column named "Status", "State" or similar.' };
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseRow(lines[i]);
+    const label = cols[itemCol] || '';
+    if (!label) continue;
+    rows.push({
+      label,
+      status: cols[statusCol] || '',
+      note: noteCol >= 0 ? (cols[noteCol] || '') : '',
+    });
+  }
+  return { rows, hasNotes: noteCol >= 0 };
+}
+
+function handleCSVUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('csvFileName').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const parsed = parseCSV(text);
+    if (!parsed || parsed.error) {
+      document.getElementById('importPreview').style.display = 'none';
+      document.getElementById('importResult').style.display = 'block';
+      document.getElementById('importResult').innerHTML = '<div class="info-box red"><strong>Import error:</strong> ' + (parsed ? parsed.error : 'Could not parse file.') + '</div>';
+      return;
+    }
+    document.getElementById('importResult').style.display = 'none';
+    showImportPreview(parsed);
+  };
+  reader.readAsText(file);
+}
+
+function showImportPreview(parsed) {
+  const index = buildItemIndex();
+  _importData = [];
+  let matched = 0, fuzzy = 0, unmatched = 0;
+  const tbody = document.getElementById('importTableBody');
+  tbody.innerHTML = '';
+
+  parsed.rows.forEach(row => {
+    const match = matchItem(row.label, index);
+    const normStatus = normaliseStatus(row.status);
+    const statusLabels = { '':'Not started', done:'✅ Done', inprogress:'⏳ In Progress', investigate:'🔎 Investigate', blocked:'⛔ Blocked', na:'N/A' };
+    const statusColors = { '':'var(--muted)', done:'#86efac', inprogress:'#93c5fd', investigate:'#fcd34d', blocked:'#fca5a5', na:'#c4b5fd' };
+
+    let matchCell, matchClass;
+    if (!match) {
+      matchCell = '✗ No match'; matchClass = 'import-match-none'; unmatched++;
+    } else if (match.confidence === 'exact') {
+      matchCell = '✓ Exact'; matchClass = 'import-match-ok'; matched++;
+    } else {
+      matchCell = '~ Fuzzy'; matchClass = 'import-match-fuzzy'; fuzzy++;
+    }
+
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--border)';
+    tr.innerHTML = `
+      <td style="padding:7px 12px;font-size:12px;color:var(--text);">${row.label}</td>
+      <td style="padding:7px 12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--accent2);">${match ? match.item.id : '—'}</td>
+      <td style="padding:7px 12px;"><span style="font-family:'DM Mono',monospace;font-size:10px;color:${statusColors[normStatus]};background:${statusColors[normStatus]}22;border:1px solid ${statusColors[normStatus]}44;border-radius:4px;padding:2px 7px;">${statusLabels[normStatus]}</span></td>
+      <td style="padding:7px 12px;font-size:11px;color:var(--subtle);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${row.note || '—'}</td>
+      <td style="padding:7px 12px;text-align:center;"><span class="${matchClass}">${matchCell}</span></td>`;
+    tbody.appendChild(tr);
+
+    if (match) {
+      _importData.push({ id: match.item.id, status: normStatus, note: row.note, confidence: match.confidence });
+    }
+  });
+
+  const total = parsed.rows.length;
+  document.getElementById('importPreviewTitle').textContent = 'Preview — ' + total + ' rows found';
+  document.getElementById('importPreviewSub').textContent =
+    matched + ' exact matches · ' + fuzzy + ' fuzzy matches · ' + unmatched + ' unmatched (will be skipped)';
+  document.getElementById('importApplyBtn').textContent = 'Apply ' + (matched + fuzzy) + ' Updates';
+  document.getElementById('importPreview').style.display = 'block';
+}
+
+function applyImport() {
+  if (!_importData.length) return;
+  let applied = 0;
+  _importData.forEach(row => {
+    if (row.status) { setItem(row.id, 'status', row.status); applied++; }
+    if (row.note) { setItem(row.id, 'comment', row.note); }
+  });
+  refreshAllUI();
+  updateProgress();
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importResult').style.display = 'block';
+  document.getElementById('importResult').innerHTML = '<div class="info-box green"><strong>✅ Import complete!</strong> ' + applied + ' items updated and synced to Firebase. All changes are now live.</div>';
+  document.getElementById('csvFileName').textContent = 'No file selected';
+  document.getElementById('csvFileInput').value = '';
+  _importData = [];
+  showToast();
+}
+
+function clearImport() {
+  _importData = [];
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importResult').style.display = 'none';
+  document.getElementById('csvFileName').textContent = 'No file selected';
+  document.getElementById('csvFileInput').value = '';
 }
 
 // ------------------------------------------------------------
